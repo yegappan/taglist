@@ -2,7 +2,7 @@
 
 Author: Yegappan Lakshmanan  (yegappan AT yahoo DOT com)
 For Vim version 6.0 and above
-Last change: 2013 Feburary 26
+Last change: 2020 April 26
 
 1. Overview 					|taglist-intro|
 2. Taglist on the internet			|taglist-internet|
@@ -79,19 +79,24 @@ for subscribing to the mailing list:
 The taglist plugin requires the following:
 
     * Vim version 6.0 and above
-    * Exuberant ctags 5.0 and above
+    * Universal Ctags or Exuberant Ctags
 
-The taglist plugin will work on all the platforms where the exuberant ctags
-utility and Vim are supported (this includes MS-Windows and Unix based
-systems).
+The taglist plugin will work on all the platforms where the Universal or
+exuberant ctags utility and Vim are supported (this includes MS-Windows, MacOS
+and Unix based systems).
 
-The taglist plugin relies on the exuberant ctags utility to dynamically
-generate the tag listing.  The exuberant ctags utility must be installed in
-your system to use this plugin.  The exuberant ctags utility is shipped with
-most of the Linux distributions.  You can download the exuberant ctags utility
-from
+The taglist plugin relies on the ctags utility to dynamically generate the tag
+listing.  The ctags utility must be installed in your system to use this
+plugin.  The exuberant ctags utility is shipped with most of the Linux
+distributions.  You can download the exuberant ctags utility from
 >
 	http://ctags.sourceforge.net
+<
+Note that there are no recent releases of exuberant ctags (after 2009).
+Instead of exuberant ctags, you can use the actively maintained Universal
+Ctags which can be downloaded from
+>
+	https://ctags.io
 <
 The taglist plugin doesn't use or create a tags file and there is no need to
 create a tags file to use this plugin. The taglist plugin will not work with
@@ -106,10 +111,10 @@ adding the following line to your .vimrc file:
 The taglist plugin will not work if you run Vim in the restricted mode (using
 the -Z command-line argument).
 
-The taglist plugin uses the Vim system() function to invoke the exuberant
-ctags utility. If Vim is compiled without the system() function then you
-cannot use the taglist plugin. Some of the Linux distributions (Suse) compile
-Vim without the system() function for security reasons.
+The taglist plugin uses the Vim system() function to invoke the ctags utility.
+If Vim is compiled without the system() function then you cannot use the
+taglist plugin. Some of the Linux distributions (Suse) compile Vim without the
+system() function for security reasons.
 
 ==============================================================================
 						*taglist-install*
@@ -128,10 +133,10 @@ Vim without the system() function for security reasons.
    directory, start Vim and run the ":helptags ." command to process the
    taglist help file. Without this step, you cannot jump to the taglist help
    topics.
-3. If the exuberant ctags utility is not present in one of the directories in
-   the PATH environment variable, then set the 'Tlist_Ctags_Cmd' variable to
-   point to the location of the exuberant ctags utility (not to the directory)
-   in the .vimrc file.
+3. If the universal or exuberant ctags utility is not present in one of the
+   directories in the PATH environment variable, then set the
+   'Tlist_Ctags_Cmd' variable to point to the location of the ctags utility
+   (not to the directory) in the .vimrc file.
 4. If you are running a terminal/console version of Vim and the terminal
    doesn't support changing the window width then set the
    'Tlist_Inc_Winwidth' variable to 0 in the .vimrc file.
@@ -739,23 +744,23 @@ set the 'Tlist_Compact_Format' variable to 1 to get a compact display.
 <
 						*'Tlist_Ctags_Cmd'*
 Tlist_Ctags_Cmd~
-The 'Tlist_Ctags_Cmd' variable specifies the location (path) of the exuberant
-ctags utility. If exuberant ctags is present in any one of the directories in
-the PATH environment variable, then there is no need to set this variable.
+The 'Tlist_Ctags_Cmd' variable specifies the location (path) of the universal
+or exuberant ctags utility. If ctags is present in any one of the directories
+in the PATH environment variable, then there is no need to set this variable.
 
-The exuberant ctags tool can be installed under different names.  When the
-taglist plugin starts up, if the 'Tlist_Ctags_Cmd' variable is not set, it
-checks for the names exuberant-ctags, exctags, ctags, ctags.exe and tags in
-the PATH environment variable.  If any one of the named executable is found,
-then the Tlist_Ctags_Cmd variable is set to that name.
+The ctags tool can be installed under different names.  When the taglist
+plugin starts up, if the 'Tlist_Ctags_Cmd' variable is not set, it checks for
+the names exuberant-ctags, exctags, ctags, ctags.exe and tags in the PATH
+environment variable.  If any one of the named executable is found, then the
+Tlist_Ctags_Cmd variable is set to that name.
 
-If exuberant ctags is not present in one of the directories specified in the
-PATH environment variable, then set this variable to point to the location of
-the ctags utility in your system. Note that this variable should point to the
-fully qualified exuberant ctags location and NOT to the directory in which
-exuberant ctags is installed. If the exuberant ctags tool is not found in
-either PATH or in the specified location, then the taglist plugin will not be
-loaded. Examples:
+If ctags is not present in one of the directories specified in the PATH
+environment variable, then set this variable to point to the location of the
+ctags utility in your system. Note that this variable should point to the
+fully qualified ctags location and NOT to the directory in which ctags is
+installed. If the ctags tool is not found in either PATH or in the specified
+location, then the taglist plugin will not be loaded.
+Examples:
 >
 	let Tlist_Ctags_Cmd = 'd:\tools\ctags.exe'
 	let Tlist_Ctags_Cmd = '/usr/local/bin/ctags'
@@ -1172,8 +1177,8 @@ Tlist_Get_Filenames()
 Tlist_Update_File_Tags({filename}, {filetype})
 		Update the tags for the file {filename}. The second argument
 		specifies the Vim filetype for the file. If the taglist plugin
-		has not processed the file previously, then the exuberant
-		ctags tool is invoked to generate the tags for the file.
+		has not processed the file previously, then the ctags tool is
+		invoked to generate the tags for the file.
 
 					    *Tlist_Get_Tag_Prototype_By_Line()*
 Tlist_Get_Tag_Prototype_By_Line([{filename}, {linenumber}])
@@ -1208,11 +1213,11 @@ Tlist_Set_App({appname})
 						*taglist-extend*
 9. Extending~
 
-The taglist plugin supports all the languages supported by the exuberant ctags
-tool, which includes the following languages: Assembly, ASP, Awk, Beta, C,
-C++, C#, Cobol, Eiffel, Erlang, Fortran, HTML, Java, Javascript, Lisp, Lua,
-Make, Pascal, Perl, PHP, Python, Rexx, Ruby, Scheme, Shell, Slang, SML, Sql,
-TCL, Verilog, Vim and Yacc.
+The taglist plugin supports all the languages supported by the universal or
+exuberant ctags tool, which includes the following languages: Assembly, ASP,
+Awk, Beta, C, C++, C#, Cobol, Eiffel, Erlang, Fortran, HTML, Java, Javascript,
+Lisp, Lua, Make, Pascal, Perl, PHP, Python, Rexx, Ruby, Scheme, Shell, Slang,
+SML, Sql, TCL, Verilog, Vim and Yacc.
 
 You can extend the taglist plugin to add support for new languages and also
 modify the support for the above listed languages.
@@ -1247,11 +1252,11 @@ The format of the value set in the tlist_xxx_settings variable is
 
 The different fields in the value are separated by the ';' character.
 
-The first field 'language_name' is the name used by exuberant ctags to refer
-to this language file. This name can be different from the file type name used
-by Vim. For example, for C++, the language name used by ctags is 'c++' but the
-filetype name used by Vim is 'cpp'. To get the list of language names
-supported by exuberant ctags, use the following command:
+The first field 'language_name' is the name used by universal or exuberant
+ctags to refer to this language file. This name can be different from the file
+type name used by Vim. For example, for C++, the language name used by ctags
+is 'c++' but the filetype name used by Vim is 'cpp'. To get the list of
+language names supported by exuberant ctags, use the following command:
 
 	$ ctags --list-maps=all
 
@@ -1295,6 +1300,10 @@ to first extend the exuberant ctags tool. For more information about extending
 exuberant ctags, visit the following page:
 
     http://ctags.sourceforge.net/EXTENDING.html
+
+For more information about extending universal ctags, visit the following page:
+
+    https://docs.ctags.io/en/latest
 
 To add support for a new language, set the tlist_xxx_settings variable in the
 ~/.vimrc file appropriately as described above. Replace 'xxx' in the variable
