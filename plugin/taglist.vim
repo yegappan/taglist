@@ -1,7 +1,7 @@
 " File: taglist.vim
 " Author: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
-" Version: l.92
-" Last Modified: Nov 14, 2002
+" Version: l.93
+" Last Modified: Dec 15, 2002
 "
 " Overview
 " --------
@@ -36,6 +36,16 @@
 " in your system to use this plugin. You should use exuberant ctags version
 " 5.3 and above.  There is no need for you to create a tags file to use this
 " plugin.
+"
+" This script relies on the Vim "filetype" detection mechanism to determine
+" the type of the current file. To turn on filetype detection use
+"
+"               :filetype on
+"
+" This plugin will not work in 'compatible' mode.  Make sure the 'compatible'
+" option is not set. This plugin will not work if you run Vim in the
+" restricted mode (using the -Z command-line argument). This plugin also
+" assumes that the system() Vim function is supported.
 "
 " Installation
 " ------------
@@ -99,15 +109,13 @@
 " appear in the file. You can sort the tags either by name or by order by
 " pressing the "s" key in the taglist window.
 "
-" This script relies on the Vim "filetype" detection mechanism to determine
-" the type of the current file. To turn on filetype detection use
+" You can use the ":TlistShowPrototype" command to display the prototype of
+" a function in the specified line number. For example,
 "
-"               :filetype on
+"               :TlistShowPrototype 50
 "
-" This plugin will not work in 'compatible' mode.  Make sure the 'compatible'
-" option is not set. This plugin will not work if you run Vim in the
-" restricted mode (using the -Z command-line argument). This plugin also
-" assumes that the system() Vim function is supported.
+" If the line number is not supplied, this command will display the prototype
+" of the current function.
 "
 " Configuration
 " -------------
@@ -187,6 +195,14 @@
 "
 "               let Tlist_Inc_Winwidth = 0
 "
+" By default, when you double click on the tag name using the left mouse 
+" button, the cursor will be positioned at the definition of the tag. You 
+" can set the Tlist_Use_SingleClick variable to one to jump to a tag when
+" you single click on the tag name using the mouse. By default this variable
+" is set to zero.
+"
+"               let Tlist_Use_SingleClick = 0
+"
 " ****************** Do not modify after this line ************************
 if exists('loaded_taglist') || &cp
     finish
@@ -239,6 +255,12 @@ endif
 " Display tag prototypes or tag names in the taglist window
 if !exists('Tlist_Display_Prototype')
     let Tlist_Display_Prototype = 0
+endif
+
+" Use single left mouse click to jump to a tag. By default this is disabled.
+" Only double click using the mouse will be processed.
+if !exists('Tlist_Use_SingleClick')
+    let Tlist_Use_SingleClick = 0
 endif
 
 " File types supported by taglist
@@ -608,6 +630,38 @@ function! s:Tlist_Open_Window(bufnum)
     endif
 endfunction
 
+" Tlist_Extract_Tagtype
+" Extract the tag type from the tag text
+function! s:Tlist_Extract_Tagtype(tag_txt)
+    " The tag type is after the tag prototype field. The prototype field
+    " ends with the /;"\t string. We add 4 at the end to skip the characters
+    " in this special string..
+    let start = strridx(a:tag_txt, '/;"' . "\t") + 4
+    let end = strridx(a:tag_txt, 'line:') - 1
+    let ttype = strpart(a:tag_txt, start, end - start)
+
+    " Replace all space characters in the tag type with underscore (_)
+    let ttype = substitute(ttype, ' ', '_', 'g')
+
+    return ttype
+endfunction
+
+" Tlist_Extract_Tag_Prototype
+" Extract the tag protoype from the tag text
+function! s:Tlist_Extract_Tag_Prototype(tag_txt)
+    let start = stridx(a:tag_txt, '/^') + 2
+    let end = strridx(a:tag_txt, '/;"' . "\t")
+    if a:tag_txt[end - 1] == '$'
+        let end = end -1
+    endif
+    let tag_pat = strpart(a:tag_txt, start, end - start)
+
+    " Remove all the leading space characters
+    let tag_pat = matchstr(tag_pat, '^\s*\zs.*')
+
+    return tag_pat
+endfunction
+
 " Tlist_Explore_File()
 " List the tags defined in the specified file in a Vim window
 function! s:Tlist_Explore_File(bufnum)
@@ -717,32 +771,24 @@ function! s:Tlist_Explore_File(bufnum)
 
         " Process the ctags output one line at a time. Separate the tag output
         " based on the tag type and store it in the tag type variable
-        let len = strlen(cmd_output)
-
         while cmd_output != ''
+            " Extract one line at a time
             let one_line = strpart(cmd_output, 0, stridx(cmd_output, "\n"))
+            " Remove the line from the tags output
+            let cmd_output = strpart(cmd_output, stridx(cmd_output, "\n") + 1)
 
             if one_line == ''
-                " Line is not in proper tags format. Remove the line
-                let cmd_output = strpart(cmd_output, 
-                                        \ stridx(cmd_output, "\n") + 1, len)
+                " Line is not in proper tags format
                 continue
             endif
 
             " Extract the tag type
-            let start = strridx(one_line, '/;"' . "\t") + strlen('/;"' . "\t")
-            let end = strridx(one_line, 'line:') - 1
-            let ttype = strpart(one_line, start, end - start)
+            let ttype = s:Tlist_Extract_Tagtype(one_line)
 
             if ttype == ''
-                " Line is not in proper tags format. Remove the line
-                let cmd_output = strpart(cmd_output, 
-                                        \ stridx(cmd_output, "\n") + 1, len)
+                " Line is not in proper tags format
                 continue
             endif
-
-            " Replace all space characters in the tag type with underscore (_)
-            let ttype = substitute(ttype, ' ', '_', 'g')
 
             " Extract the tag name
             if g:Tlist_Display_Prototype == 0
@@ -780,10 +826,6 @@ function! s:Tlist_Explore_File(bufnum)
             let b:tlist_tag_{b:tlist_tag_count} = cnt . ':' . one_line
 
             let b:tlist_{ftype}_{ttype}_{cnt} = b:tlist_tag_count
-
-            " Remove the processed line
-            let cmd_output = strpart(cmd_output, 
-                                    \ stridx(cmd_output, "\n") + 1, len)
         endwhile
 
         " Cache the processed tags output using buffer local variables
@@ -1073,6 +1115,11 @@ function! s:Tlist_Init_Window()
     nnoremap <buffer> <silent> ? :call <SID>Tlist_Show_Help()<CR>
     nnoremap <buffer> <silent> q :close<CR>
 
+    " Map single left mouse click if the user wants this functionality
+    if g:Tlist_Use_SingleClick == 1
+    nnoremap <silent> <LeftMouse> <LeftMouse>:if bufname("%") =~ "__Tag_List__" <bar> call <SID>Tlist_Jump_To_Tag(0) <bar> endif <CR>
+    endif
+
     " Define the autocommand to highlight the current tag
     augroup TagListAutoCmds
         autocmd!
@@ -1244,15 +1291,91 @@ function! s:Tlist_Show_Tag_Prototype()
     let mtxt = b:tlist_tag_{lnum}
 
     " Get the tag search pattern and display it
-    let start = stridx(mtxt, '/^') + 2
-    let end = strridx(mtxt, '/;"' . "\t")
-    if mtxt[end - 1] == '$'
-        let end = end -1
-    endif
-    let tag_pat = strpart(mtxt, start, end - start)
-    let tag_pat = matchstr(tag_pat, '^\s*\zs.*')
+    echo s:Tlist_Extract_Tag_Prototype(mtxt)
+endfunction
 
-    echo tag_pat
+" Tlist_Locate_Tag_Text
+" Locate the tag text given the line number in the source window
+function! s:Tlist_Locate_Tag_Text(sort_type, linenum)
+    let left = 1
+    let right = b:tlist_tag_count
+
+    if a:sort_type == 'order'
+        " Tag list sorted by order, do a binary search comparing the line
+        " numbers
+
+        " If the current line is the less than the first tag, then no need to
+        " search
+        let txt = b:tlist_tag_1
+        let start = strridx(txt, 'line:') + strlen('line:')
+        let end = strridx(txt, "\t")
+        if end < start
+            let first_lnum = strpart(txt, start) + 0
+        else
+            let first_lnum = strpart(txt, start, end - start) + 0
+        endif
+
+        if a:linenum < first_lnum
+            return ""
+        endif
+
+        while left < right
+            let middle = (right + left + 1) / 2
+            let txt = b:tlist_tag_{middle}
+
+            let start = strridx(txt, 'line:') + strlen('line:')
+            let end = strridx(txt, "\t")
+            if end < start
+                let middle_lnum = strpart(txt, start) + 0
+            else
+                let middle_lnum = strpart(txt, start, end - start) + 0
+            endif
+
+            if middle_lnum == a:linenum
+                let left = middle
+                break
+            endif
+
+            if middle_lnum > a:linenum
+                let right = middle - 1
+            else
+                let left = middle
+            endif
+        endwhile
+    else
+        " sorted by name, brute force method (Dave Eggum)
+        let closest_lnum = 0
+        let final_left = 0
+        while left < right
+            let txt = b:tlist_tag_{left}
+
+            let start = strridx(txt, 'line:') + strlen('line:')
+            let end = strridx(txt, "\t")
+            if end < start
+                let lnum = strpart(txt, start) + 0
+            else
+                let lnum = strpart(txt, start, end - start) + 0
+            endif
+
+            if lnum < a:linenum && lnum > closest_lnum
+                let closest_lnum = lnum
+                let final_left = left
+            elseif lnum == a:linenum
+                let closest_lnum = lnum
+                break
+            else
+                let left = left + 1
+            endif
+        endwhile
+        if closest_lnum == 0
+            return ""
+        endif
+        if left == right
+            let left = final_left
+        endif
+    endif
+
+    return b:tlist_tag_{left}
 endfunction
 
 " Tlist_Highlight_Tag()
@@ -1303,102 +1426,19 @@ function! s:Tlist_Highlight_Tag(bufnum, curline)
     " Clear previously selected name
     match none
 
-    let left = 1
-    let right = b:tlist_tag_count
-
-    if getbufvar(bno, 'tlist_sort_type') == 'order'
-        " Tag list sorted by order, do a binary search comparing the line
-        " numbers
-
-        " If the current line is the less than the first tag, then no need to
-        " search
-        let txt = b:tlist_tag_1
-        let start = strridx(txt, 'line:') + strlen('line:')
-        let end = strridx(txt, "\t")
-        if end < start
-            let first_lnum = strpart(txt, start) + 0
-        else
-            let first_lnum = strpart(txt, start, end - start) + 0
+    let tag_txt = s:Tlist_Locate_Tag_Text(getbufvar(bno, 'tlist_sort_type'),
+                                          \ a:curline)
+    if tag_txt == ""
+        if !in_taglist_window
+            let s:Tlist_Skip_Refresh = 1
+            exe org_winnr . 'wincmd w'
+            let s:Tlist_Skip_Refresh = 0
         endif
-
-        if a:curline < first_lnum
-            if !in_taglist_window
-                let s:Tlist_Skip_Refresh = 1
-                exe org_winnr . 'wincmd w'
-                let s:Tlist_Skip_Refresh = 0
-            endif
-            return
-        endif
-
-        while left < right
-            let middle = (right + left + 1) / 2
-            let txt = b:tlist_tag_{middle}
-
-            let start = strridx(txt, 'line:') + strlen('line:')
-            let end = strridx(txt, "\t")
-            if end < start
-                let middle_lnum = strpart(txt, start) + 0
-            else
-                let middle_lnum = strpart(txt, start, end - start) + 0
-            endif
-
-            if middle_lnum == a:curline
-                let left = middle
-                break
-            endif
-
-            if middle_lnum > a:curline
-                let right = middle - 1
-            else
-                let left = middle
-            endif
-        endwhile
-    else
-        " sorted by name, brute force method (Dave Eggum)
-        let closest_lnum = 0
-        let final_left = 0
-        while left < right
-            let txt = b:tlist_tag_{left}
-
-            let start = strridx(txt, 'line:') + strlen('line:')
-            let end = strridx(txt, "\t")
-            if end < start
-                let lnum = strpart(txt, start) + 0
-            else
-                let lnum = strpart(txt, start, end - start) + 0
-            endif
-
-            if lnum < a:curline && lnum > closest_lnum
-                let closest_lnum = lnum
-                let final_left = left
-            elseif lnum == a:curline
-                let closest_lnum = lnum
-                break
-            else
-                let left = left + 1
-            endif
-        endwhile
-        if closest_lnum == 0
-            if !in_taglist_window
-                let s:Tlist_Skip_Refresh = 1
-                exe org_winnr . 'wincmd w'
-                let s:Tlist_Skip_Refresh = 0
-            endif
-            return
-        endif
-        if left == right
-            let left = final_left
-        endif
+        return
     endif
 
-    let tag_txt = b:tlist_tag_{left}
-
     " Extract the tag type
-    let start = strridx(tag_txt, '/;"' . "\t") + strlen('/;"' . "\t")
-    let end = strridx(tag_txt, 'line:') - 1
-    let ttype = strpart(tag_txt, start, end - start)
-    " Replace all space characters in the tag type with underscore (_)
-    let ttype = substitute(ttype, ' ', '_', 'g')
+    let ttype = s:Tlist_Extract_Tagtype(tag_txt)
 
     " Extract the tag offset
     let offset = strpart(tag_txt, 0, stridx(tag_txt, ':')) + 0
@@ -1432,6 +1472,35 @@ function! s:Tlist_Highlight_Tag(bufnum, curline)
     return
 endfunction
 
+" Tlist_Get_Tag_Prototype_By_Line
+function! s:Tlist_Get_Tag_Prototype_By_Line(linenum)
+    " Make sure the current file has a name
+    let filename = bufname("%")
+    if filename == ''
+        return ""
+    endif
+
+    let linenr = a:linenum
+    if linenr == ""
+        " Default is the current line
+        let linenr = line('.')
+    endif
+
+    " If there are no tags for this file, then no need to proceed further
+    if !exists("b:tlist_tag_count") || b:tlist_tag_count == 0
+        return ""
+    endif
+
+    " Get the tag text using the line number
+    let tag_txt = s:Tlist_Locate_Tag_Text(b:tlist_sort_type, linenr)
+    if tag_txt == ""
+        return ""
+    endif
+
+    " Extract the tag search pattern and return it
+    return s:Tlist_Extract_Tag_Prototype(tag_txt)
+endfunction
+
 " Define tag listing autocommand to automatically open the taglist window on
 " Vim startup
 if g:Tlist_Auto_Open
@@ -1445,3 +1514,4 @@ autocmd BufWinEnter __Tag_List__ call <SID>Tlist_Init_Window()
 " window
 command! -nargs=0 Tlist call s:Tlist_Toggle_Window(bufnr('%'))
 command! -nargs=0 TlistSync call s:Tlist_Highlight_Tag(bufnr('%'), line('.'))
+command! -nargs=? TlistShowPrototype echo s:Tlist_Get_Tag_Prototype_By_Line(<q-args>)
