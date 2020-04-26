@@ -1,7 +1,7 @@
 " File: taglist.vim
-" Author: Yegappan Lakshmanan
-" Version: l.91
-" Last Modified: Nov 5, 2002
+" Author: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
+" Version: l.92
+" Last Modified: Nov 14, 2002
 "
 " Overview
 " --------
@@ -21,8 +21,9 @@
 " 8. Can optionally use the tag prototype instead of the tag name.
 " 9. The tag list can be sorted either by name or by line number.
 " 10. Supports the following language files: Assembly, ASP, Awk, C, C++,
-"     Cobol, Eiffel, Fortran, Java, Lisp, Make, Pascal, Perl, PHP, Python,
-"     Rexx, Ruby, Scheme, Shell, Slang, TCL, Verilog, Vim and Yacc.
+"     Cobol, Eiffel, Fortran, Java, Lisp, Lua, Make, Pascal, Perl, PHP,
+"     Python, Rexx, Ruby, Scheme, Shell, Slang, Sql, TCL, Verilog, Vim and
+"     Yacc.
 " 11. Runs in all the platforms where the exuberant ctags utility and Vim are
 "     supported (this includes MS-Windows and Unix based systems).
 " 12. Runs in both console/terminal and GUI versions of Vim.
@@ -103,8 +104,10 @@
 "
 "               :filetype on
 "
-" This script will not work in 'compatible' mode.  Make sure the 'compatible'
-" option is not set.
+" This plugin will not work in 'compatible' mode.  Make sure the 'compatible'
+" option is not set. This plugin will not work if you run Vim in the
+" restricted mode (using the -Z command-line argument). This plugin also
+" assumes that the system() Vim function is supported.
 "
 " Configuration
 " -------------
@@ -184,7 +187,6 @@
 "
 "               let Tlist_Inc_Winwidth = 0
 "
-"
 " ****************** Do not modify after this line ************************
 if exists('loaded_taglist') || &cp
     finish
@@ -240,7 +242,9 @@ if !exists('Tlist_Display_Prototype')
 endif
 
 " File types supported by taglist
-let s:tlist_file_types = 'asm asp awk c cpp cobol eiffel fortran java lisp make pascal perl php python rexx ruby scheme sh slang tcl verilog vim yacc'
+let s:tlist_file_types = 'asm asp awk c cpp cobol eiffel fortran java ' .
+            \ 'lisp lua make pascal perl php python rexx ruby scheme sh ' .
+            \ 'slang sql tcl verilog vim yacc'
 
 " assembly language
 let s:tlist_asm_ctags_args = '--language-force=asm --asm-types=dlmt'
@@ -260,7 +264,8 @@ let s:tlist_c_tag_types = 'macro enum struct union typedef variable function'
 
 " c++ language
 let s:tlist_cpp_ctags_args = '--language-force=c++ --c++-types=vdtcgsuf'
-let s:tlist_cpp_tag_types = 'macro typedef class enum struct union variable function'
+let s:tlist_cpp_tag_types = 'macro typedef class enum struct union ' .
+                            \ 'variable function'
 
 " cobol language
 let s:tlist_cobol_ctags_args = '--language-force=cobol --cobol-types=p'
@@ -271,8 +276,10 @@ let s:tlist_eiffel_ctags_args = '--language-force=eiffel --eiffel-types=cf'
 let s:tlist_eiffel_tag_types = 'class feature'
 
 " fortran language
-let s:tlist_fortran_ctags_args = '--language-force=fortran --fortran-types=bcefiklmnpstv'
-let s:tlist_fortran_tag_types = 'block_data common entry function interface type label module namelist program subroutine derived variable'
+let s:tlist_fortran_ctags_args = '--language-force=fortran ' .
+                                 \ '--fortran-types=bcefiklmnpstv'
+let s:tlist_fortran_tag_types = 'block_data common entry function interface ' .
+            \ 'type label module namelist program subroutine derived variable'
 
 " java language
 let s:tlist_java_ctags_args = '--language-force=java --java-types=pcifm'
@@ -281,6 +288,10 @@ let s:tlist_java_tag_types = 'package class interface field method'
 " lisp language
 let s:tlist_lisp_ctags_args = '--language-force=lisp --lisp-types=f'
 let s:tlist_lisp_tag_types = 'function'
+
+" lua language
+let s:tlist_lua_ctags_args = '--language-force=lua --lua-types=f'
+let s:tlist_lua_tag_types = 'function'
 
 " makefiles
 let s:tlist_make_ctags_args = '--language-force=make --make-types=m'
@@ -322,13 +333,20 @@ let s:tlist_sh_tag_types = 'function'
 let s:tlist_slang_ctags_args = '--language-force=slang --slang-types=nf'
 let s:tlist_slang_tag_types = 'namespace function'
 
+" sql language
+let s:tlist_sql_ctags_args = '--language-force=sql --sql-types=cfFlPprstTv'
+let s:tlist_sql_tag_types = 'cursor function record_field local_variable ' .
+            \ 'package procedure record subtype table trigger variable'
+
 " tcl language
 let s:tlist_tcl_ctags_args = '--language-force=tcl --tcl-types=p'
 let s:tlist_tcl_tag_types = 'procedure'
 
 "verilog language
-let s:tlist_verilog_ctags_args = '--language-force=verilog --verilog-types=mPrtwpvf'
-let s:tlist_verilog_tag_types = 'module parameter reg task wire port variable function'
+let s:tlist_verilog_ctags_args = '--language-force=verilog ' .
+                                \ '--verilog-types=mPrtwpvf'
+let s:tlist_verilog_tag_types = 'module parameter reg task wire port ' .
+                                \ 'variable function'
 
 " vim language
 let s:tlist_vim_ctags_args = '--language-force=vim --vim-types=vf'
@@ -379,6 +397,7 @@ function! s:Tlist_Show_Help()
     echo 'Keyboard shortcuts for the taglist window'
     echo '-----------------------------------------'
     echo '<Enter> : Jump to the tag definition'
+    echo 'o       : Jump to the tag definition in a new window'
     echo '<Space> : Display the tag prototype'
     echo 'u       : Update the tag list'
     echo 's       : Sort the tag list by ' . 
@@ -664,16 +683,8 @@ function! s:Tlist_Explore_File(bufnum)
         let ctags_args = ctags_args . ' ' . s:tlist_{ftype}_ctags_args
 
         " Ctags command to produce output with regexp for locating the tags
-        if (has('win32') && !has('win95'))
-            " When using cmd.exe in MS-Windows, extra quotes must be added at
-            " the beginning and at the end of the command line. These will
-            " be removed by cmd.exe. Refer to cmd /? for more information
-            let ctags_cmd = '""' . g:Tlist_Ctags_Cmd . '"' . ctags_args
-            let ctags_cmd = ctags_cmd . ' "' . filename . '""'
-        else
-            let ctags_cmd = '"' . g:Tlist_Ctags_Cmd . '"' . ctags_args
-            let ctags_cmd = ctags_cmd . ' "' . filename . '"'
-        endif
+        let ctags_cmd = g:Tlist_Ctags_Cmd . ctags_args
+        let ctags_cmd = ctags_cmd . ' "' . filename . '"'
 
         " Run ctags and get the tag list
         let cmd_output = system(ctags_cmd)
@@ -1047,8 +1058,9 @@ function! s:Tlist_Init_Window()
     silent! setlocal nonumber
 
     " Create buffer local mappings for jumping to the tags and sorting the list
-    nnoremap <buffer> <silent> <CR> :call <SID>Tlist_Jump_To_Tag()<CR>
-    nnoremap <buffer> <silent> <2-LeftMouse> :call <SID>Tlist_Jump_To_Tag()<CR>
+    nnoremap <buffer> <silent> <CR> :call <SID>Tlist_Jump_To_Tag(0)<CR>
+    nnoremap <buffer> <silent> o :call <SID>Tlist_Jump_To_Tag(1)<CR>
+    nnoremap <buffer> <silent> <2-LeftMouse> :call <SID>Tlist_Jump_To_Tag(0)<CR>
     nnoremap <buffer> <silent> s :call <SID>Tlist_Change_Sort()<CR>
     nnoremap <buffer> <silent> + :silent! foldopen<CR>
     nnoremap <buffer> <silent> - :silent! foldclose<CR>
@@ -1067,7 +1079,8 @@ function! s:Tlist_Init_Window()
         " Display the tag prototype for the tag under the cursor.
         autocmd CursorHold __Tag_List__ call s:Tlist_Show_Tag_Prototype()
         " Highlight the current tag 
-        autocmd CursorHold * silent call <SID>Tlist_Highlight_Tag(bufnr('%'), line('.'))
+        autocmd CursorHold * silent call <SID>Tlist_Highlight_Tag(bufnr('%'), 
+                                        \ line('.'))
         " Adjust the Vim window width when taglist window is closed
         autocmd BufDelete __Tag_List__ call <SID>Tlist_Close_Window()
         " Auto refresh the taglisting window
@@ -1126,10 +1139,15 @@ endfunction
 
 " Tlist_Jump_To_Tag()
 " Jump to the location of the current tag
-function! s:Tlist_Jump_To_Tag()
+function! s:Tlist_Jump_To_Tag(new_window)
     " Do not process comment lines and empty lines
     let curline = getline('.')
     if curline == '' || curline[0] == '"'
+        return
+    endif
+
+    " If inside a fold, then don't try to jump to the tag
+    if foldclosed('.') != -1
         return
     endif
 
@@ -1159,6 +1177,12 @@ function! s:Tlist_Jump_To_Tag()
     if winnum == -1
         if g:Tlist_Use_Horiz_Window == 1
             exe 'leftabove split #' . b:tlist_bufnum
+            " Go to the taglist window to change the window size to the user
+            " configured value
+            wincmd p
+            exe 'resize 10'
+            " Go back to the file window
+            wincmd p
         else
             " Open the file in a window and skip refreshing the taglist window
             exe 'rightbelow vertical split #' . b:tlist_bufnum
@@ -1171,6 +1195,12 @@ function! s:Tlist_Jump_To_Tag()
         endif
     else
         exe winnum . 'wincmd w'
+
+        " If the user asked to jump to the tag in a new window, then split the
+        " existing window into two.
+        if a:new_window
+            split
+        endif
     endif
 
     " Jump to the tag
@@ -1197,6 +1227,11 @@ function! s:Tlist_Show_Tag_Prototype()
     " Do not process comment lines and empty lines
     let curline = getline('.')
     if curline == '' || curline[0] == '"'
+        return
+    endif
+
+    " If inside a fold, then don't display the prototype
+    if foldclosed('.') != -1
         return
     endif
 
