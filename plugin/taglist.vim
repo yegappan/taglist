@@ -1,7 +1,7 @@
 " File: taglist.vim
 " Author: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
-" Version: l.95
-" Last Modified: Jan 5, 2003
+" Version: l.96
+" Last Modified: Jan 13, 2003
 "
 " Overview
 " --------
@@ -371,8 +371,8 @@ let s:tlist_slang_tag_types = 'namespace function'
 
 " sql language
 let s:tlist_sql_ctags_args = '--language-force=sql --sql-types=cfFlPprstTv'
-let s:tlist_sql_tag_types = 'cursor function record_field local_variable ' .
-            \ 'package procedure record subtype table trigger variable'
+let s:tlist_sql_tag_types = 'cursor function field local package procedure ' .
+                          \ 'record subtype table trigger variable'
 
 " tcl language
 let s:tlist_tcl_ctags_args = '--language-force=tcl --tcl-types=p'
@@ -1306,6 +1306,13 @@ function! s:Tlist_Jump_To_Tag(new_window)
 
     " Bring the line to the middle of the window
     normal! z.
+
+    " If the line is inside a fold, open the fold
+    if has('folding')
+        if foldlevel('.') != 0
+            normal zo
+        endif
+    endif
 
     let s:Tlist_Skip_Refresh = 0
 endfunction
