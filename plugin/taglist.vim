@@ -1,7 +1,7 @@
 " File: taglist.vim
 " Author: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
-" Version: l.94
-" Last Modified: Dec 19, 2002
+" Version: l.95
+" Last Modified: Jan 5, 2003
 "
 " Overview
 " --------
@@ -485,52 +485,55 @@ function! s:Tlist_Skip_Buffer(bufnum)
     return 0
 endfunction
 
-" Tlist_Toggle_Window()
-" Open or close a taglist window
-function! s:Tlist_Toggle_Window(bufnum)
-    let curline = line('.')
+" Tlist_Cleanup()
+" Cleanup all the taglist window variables.
+function! s:Tlist_Cleanup()
+    if has('syntax')
+        silent! syntax clear TagListTitle
+    endif
+    match none
 
-    " Tag list window name
-    let bname = '__Tag_List__'
-
-    " If taglist window is open then close it.
-    let winnum = bufwinnr(bname)
-    if winnum != -1
-        if winnr() == winnum
-            " Already in the taglist window. Close it and return
-            close
-        else
-            " Goto the taglist window, close it and then come back to the
-            " original window
-            let curbufnr = bufnr('%')
-            exe winnum . 'wincmd w'
-            close
-            " Need to jump back to the original window only if we are not
-            " already in that window
-            let winnum = bufwinnr(curbufnr)
-            if winnr() != winnum
-                exe winnum . 'wincmd w'
-            endif
+    if exists('b:tlist_ftype') && b:tlist_ftype != ''
+        let count_var_name = 's:tlist_' . b:tlist_ftype . '_count'
+        if exists(count_var_name)
+            let old_ftype = b:tlist_ftype
+            let i = 1
+            while i <= s:tlist_{old_ftype}_count
+                let ttype = s:tlist_{old_ftype}_{i}_name
+                let j = 1
+                let var_name = 'b:tlist_' . old_ftype . '_' . ttype . '_count'
+                if exists(var_name)
+                    let cnt = b:tlist_{old_ftype}_{ttype}_count
+                else
+                    let cnt = 0
+                endif
+                while j <= cnt
+                    unlet! b:tlist_{old_ftype}_{ttype}_{j}
+                    let j = j + 1
+                endwhile
+                unlet! b:tlist_{old_ftype}_{ttype}_count
+                unlet! b:tlist_{old_ftype}_{ttype}_start
+                let i = i + 1
+            endwhile
         endif
-        return
     endif
 
-    " Open the taglist window
-    call s:Tlist_Explore_File(a:bufnum)
+    " Clean up all the variables containing the tags output
+    if exists('b:tlist_tag_count')
+        while b:tlist_tag_count > 0
+            unlet! b:tlist_tag_{b:tlist_tag_count}
+            let b:tlist_tag_count = b:tlist_tag_count - 1
+        endwhile
+    endif
 
-    " Highlight the current tag
-    call s:Tlist_Highlight_Tag(a:bufnum, curline)
-
-    let s:Tlist_Skip_Refresh = 1
-    wincmd p
-    let s:Tlist_Skip_Refresh = 0
+    unlet! b:tlist_bufnum
+    unlet! b:tlist_bufname
+    unlet! b:tlist_ftype
 endfunction
 
 " Tlist_Open_Window
 " Create a new taglist window. If it is already open, clear it
-function! s:Tlist_Open_Window(bufnum)
-    let filename = bufname(a:bufnum)
-
+function! s:Tlist_Open_Window()
     " Tag list window name
     let bname = '__Tag_List__'
 
@@ -541,23 +544,6 @@ function! s:Tlist_Open_Window(bufnum)
         if winnr() != winnum
             exe winnum . 'wincmd w'
         endif
-
-        " Set report option to a huge value to prevent informations messages
-        " while deleting the lines
-        let old_report = &report
-        set report=99999
-
-        " Mark the buffer as modifiable
-        setlocal modifiable
-
-        " Delete the contents of the buffer to the black-hole register
-        silent! %delete _
-
-        " Restore the report option
-        let &report = old_report
-
-        " Clean up all the old variables used for the last filetype
-        call <SID>Tlist_Cleanup()
     else
         " Create a new window. If user prefers a horizontal window, then open
         " a horizontally split window. Otherwise open a vertically split
@@ -603,6 +589,32 @@ function! s:Tlist_Open_Window(bufnum)
         " Create the taglist window
         exe 'silent! ' . win_dir . ' ' . win_width . 'split ' . wcmd
     endif
+endfunction
+
+" Tlist_Init_Window
+" Set the default options for the taglist window
+function! s:Tlist_Init_Window(bufnum)
+    " Set report option to a huge value to prevent informations messages
+    " while deleting the lines
+    let old_report = &report
+    set report=99999
+
+    " Mark the buffer as modifiable
+    setlocal modifiable
+
+    " Delete the contents of the buffer to the black-hole register
+    silent! %delete _
+
+    " Mark the buffer as not modifiable
+    setlocal nomodifiable
+
+    " Restore the report option
+    let &report = old_report
+
+    " Clean up all the old variables used for the last filetype
+    call <SID>Tlist_Cleanup()
+
+    let filename = fnamemodify(bufname(a:bufnum), ':p')
 
     " Set the sort type. First time, use the global setting. After that use
     " the previous setting
@@ -615,6 +627,9 @@ function! s:Tlist_Open_Window(bufnum)
     let b:tlist_bufnum = a:bufnum
     let b:tlist_bufname = fnamemodify(bufname(a:bufnum), ':p')
     let b:tlist_ftype = getbufvar(a:bufnum, '&filetype')
+
+    " Mark the buffer as modifiable
+    setlocal modifiable
 
     if g:Tlist_Compact_Format == 0
         call append(0, '" Press ? for help')
@@ -644,49 +659,92 @@ function! s:Tlist_Open_Window(bufnum)
         highlight clear TagListTitle
         highlight link TagListTitle Title
     endif
-endfunction
 
-" Tlist_Extract_Tagtype
-" Extract the tag type from the tag text
-function! s:Tlist_Extract_Tagtype(tag_txt)
-    " The tag type is after the tag prototype field. The prototype field
-    " ends with the /;"\t string. We add 4 at the end to skip the characters
-    " in this special string..
-    let start = strridx(a:tag_txt, '/;"' . "\t") + 4
-    let end = strridx(a:tag_txt, 'line:') - 1
-    let ttype = strpart(a:tag_txt, start, end - start)
-
-    " Replace all space characters in the tag type with underscore (_)
-    let ttype = substitute(ttype, ' ', '_', 'g')
-
-    return ttype
-endfunction
-
-" Tlist_Extract_Tag_Prototype
-" Extract the tag protoype from the tag text
-function! s:Tlist_Extract_Tag_Prototype(tag_txt)
-    let start = stridx(a:tag_txt, '/^') + 2
-    let end = strridx(a:tag_txt, '/;"' . "\t")
-    if a:tag_txt[end - 1] == '$'
-        let end = end -1
+    " Folding related settings
+    if has('folding')
+        setlocal foldenable
+        setlocal foldmethod=manual
+        setlocal foldcolumn=2
+        setlocal foldtext=v:folddashes.getline(v:foldstart)
     endif
-    let tag_pat = strpart(a:tag_txt, start, end - start)
 
-    " Remove all the leading space characters
-    let tag_pat = matchstr(tag_pat, '^\s*\zs.*')
+    " Mark buffer as scratch
+    silent! setlocal buftype=nofile
+    silent! setlocal bufhidden=delete
+    silent! setlocal noswapfile
+    silent! setlocal nowrap
+    silent! setlocal nobuflisted
 
-    return tag_pat
+    " If the 'number' option is set in the source window, it will affect the
+    " taglist window. So forcefully disable 'number' option for the taglist
+    " window
+    silent! setlocal nonumber
+
+    " Create buffer local mappings for jumping to the tags and sorting the list
+    nnoremap <buffer> <silent> <CR> :call <SID>Tlist_Jump_To_Tag(0)<CR>
+    nnoremap <buffer> <silent> o :call <SID>Tlist_Jump_To_Tag(1)<CR>
+    nnoremap <buffer> <silent> <2-LeftMouse> :call <SID>Tlist_Jump_To_Tag(0)<CR>
+    nnoremap <buffer> <silent> s :call <SID>Tlist_Change_Sort()<CR>
+    nnoremap <buffer> <silent> + :silent! foldopen<CR>
+    nnoremap <buffer> <silent> - :silent! foldclose<CR>
+    nnoremap <buffer> <silent> * :silent! %foldopen!<CR>
+    nnoremap <buffer> <silent> <kPlus> :silent! foldopen<CR>
+    nnoremap <buffer> <silent> <kMinus> :silent! foldclose<CR>
+    nnoremap <buffer> <silent> <kMultiply> :silent! %foldopen!<CR>
+    nnoremap <buffer> <silent> <Space> :call <SID>Tlist_Show_Tag_Prototype()<CR>
+    nnoremap <buffer> <silent> u :call <SID>Tlist_Update_Window()<CR>
+    nnoremap <buffer> <silent> ? :call <SID>Tlist_Show_Help()<CR>
+    nnoremap <buffer> <silent> q :close<CR>
+
+    " Map single left mouse click if the user wants this functionality
+    if g:Tlist_Use_SingleClick == 1
+    nnoremap <silent> <LeftMouse> <LeftMouse>:if bufname("%") =~ "__Tag_List__"
+                        \ <bar> call <SID>Tlist_Jump_To_Tag(0) <bar> endif <CR>
+    else
+        if hasmapto('<LeftMouse>')
+            nunmap <LeftMouse>
+        endif
+    endif
+
+    " Define the autocommand to highlight the current tag
+    augroup TagListAutoCmds
+        autocmd!
+        " Display the tag prototype for the tag under the cursor.
+        autocmd CursorHold __Tag_List__ call s:Tlist_Show_Tag_Prototype()
+        " Highlight the current tag 
+        autocmd CursorHold * silent call <SID>Tlist_Highlight_Tag(bufnr('%'), 
+                                        \ line('.'))
+        " Adjust the Vim window width when taglist window is closed
+        autocmd BufUnload __Tag_List__ call <SID>Tlist_Close_Window()
+        " Auto refresh the taglisting window
+        autocmd BufEnter * call <SID>Tlist_Refresh_Window()
+    augroup end
+endfunction
+
+" Tlist_Close_Window()
+" Close the taglist window and adjust the Vim window width
+function! s:Tlist_Close_Window()
+    " Remove the autocommands for the taglist window
+    silent! autocmd! TagListAutoCmds
+
+    if g:Tlist_Use_Horiz_Window || g:Tlist_Inc_Winwidth == 0 ||
+                \ s:tlist_winsize_chgd == 0 ||
+                \ &columns < (80 + g:Tlist_WinWidth)
+        " No need to adjust window width if horizontally split tag listing
+        " window or if columns is less than 101 or if the user chose not to
+        " adjust the window width
+    else
+        " Adjust the Vim window width
+        let &columns= &columns - (g:Tlist_WinWidth + 1)
+    endif
 endfunction
 
 " Tlist_Explore_File()
 " List the tags defined in the specified file in a Vim window
 function! s:Tlist_Explore_File(bufnum)
     " Get the filename and file type
-    let filename = bufname(a:bufnum)
+    let filename = fnamemodify(bufname(a:bufnum), ':p')
     let ftype = getbufvar(a:bufnum, '&filetype')
-
-    " Open a new taglist window or refresh the existing taglist window
-    call s:Tlist_Open_Window(a:bufnum)
 
     " Check for valid filename and valid filetype
     if filename == '' || !filereadable(filename) || ftype == ''
@@ -931,26 +989,87 @@ function! s:Tlist_Explore_File(bufnum)
     " Goto the first line in the buffer
     go
 
-    " In auto refresh mode, go back to the original window
     return
 endfunction
 
-" Tlist_Close_Window()
-" Close the taglist window and adjust the Vim window width
-function! s:Tlist_Close_Window()
-    " Remove the autocommands for the taglist window
-    silent! autocmd! TagListAutoCmds
+" Tlist_Toggle_Window()
+" Open or close a taglist window
+function! s:Tlist_Toggle_Window(bufnum)
+    let curline = line('.')
 
-    if g:Tlist_Use_Horiz_Window || g:Tlist_Inc_Winwidth == 0 ||
-                \ s:tlist_winsize_chgd == 0 ||
-                \ &columns < (80 + g:Tlist_WinWidth)
-        " No need to adjust window width if horizontally split tag listing
-        " window or if columns is less than 101 or if the user chose not to
-        " adjust the window width
-    else
-        " Adjust the Vim window width
-        let &columns= &columns - (g:Tlist_WinWidth + 1)
+    " Tag list window name
+    let bname = '__Tag_List__'
+
+    " If taglist window is open then close it.
+    let winnum = bufwinnr(bname)
+    if winnum != -1
+        if winnr() == winnum
+            " Already in the taglist window. Close it and return
+            close
+        else
+            " Goto the taglist window, close it and then come back to the
+            " original window
+            let curbufnr = bufnr('%')
+            exe winnum . 'wincmd w'
+            close
+            " Need to jump back to the original window only if we are not
+            " already in that window
+            let winnum = bufwinnr(curbufnr)
+            if winnr() != winnum
+                exe winnum . 'wincmd w'
+            endif
+        endif
+        return
     endif
+
+    " Open the taglist window
+    call s:Tlist_Open_Window()
+
+    " Initialize the taglist window
+    call s:Tlist_Init_Window(a:bufnum)
+
+    " List the tags defined in a file
+    call s:Tlist_Explore_File(a:bufnum)
+
+    " Highlight the current tag
+    call s:Tlist_Highlight_Tag(a:bufnum, curline)
+
+    " Go back to the original window
+    let s:Tlist_Skip_Refresh = 1
+    wincmd p
+    let s:Tlist_Skip_Refresh = 0
+endfunction
+
+" Tlist_Extract_Tagtype
+" Extract the tag type from the tag text
+function! s:Tlist_Extract_Tagtype(tag_txt)
+    " The tag type is after the tag prototype field. The prototype field
+    " ends with the /;"\t string. We add 4 at the end to skip the characters
+    " in this special string..
+    let start = strridx(a:tag_txt, '/;"' . "\t") + 4
+    let end = strridx(a:tag_txt, 'line:') - 1
+    let ttype = strpart(a:tag_txt, start, end - start)
+
+    " Replace all space characters in the tag type with underscore (_)
+    let ttype = substitute(ttype, ' ', '_', 'g')
+
+    return ttype
+endfunction
+
+" Tlist_Extract_Tag_Prototype
+" Extract the tag protoype from the tag text
+function! s:Tlist_Extract_Tag_Prototype(tag_txt)
+    let start = stridx(a:tag_txt, '/^') + 2
+    let end = strridx(a:tag_txt, '/;"' . "\t")
+    if a:tag_txt[end - 1] == '$'
+        let end = end -1
+    endif
+    let tag_pat = strpart(a:tag_txt, start, end - start)
+
+    " Remove all the leading space characters
+    let tag_pat = matchstr(tag_pat, '^\s*\zs.*')
+
+    return tag_pat
 endfunction
 
 " Tlist_Refresh_Window()
@@ -994,6 +1113,10 @@ function! s:Tlist_Refresh_Window()
     " Save the current window number
     let cur_winnr = winnr()
 
+    call s:Tlist_Open_Window()
+
+    call s:Tlist_Init_Window(cur_bufnr)
+
     " Update the taglist window
     call s:Tlist_Explore_File(cur_bufnr)
 
@@ -1029,6 +1152,10 @@ function! s:Tlist_Change_Sort()
     " Clear out the cached taglist information
     call setbufvar(b:tlist_bufnum, 'tlist_valid_cache', '')
 
+    call s:Tlist_Open_Window()
+
+    call s:Tlist_Init_Window(b:tlist_bufnum)
+
     call s:Tlist_Explore_File(b:tlist_bufnum)
 
     " Go back to the tag line before the list is sorted
@@ -1048,114 +1175,15 @@ function! s:Tlist_Update_Window()
     " Clear out the cached taglist information
     call setbufvar(b:tlist_bufnum, 'tlist_valid_cache', '')
 
+    call s:Tlist_Open_Window()
+
+    call s:Tlist_Init_Window(b:tlist_bufnum)
+
     " Update the taglist window
     call s:Tlist_Explore_File(b:tlist_bufnum)
 
     " Go back to the tag line before the list is sorted
     call search(curline, 'w')
-endfunction
-
-" Tlist_Cleanup()
-" Cleanup all the taglist window variables.
-function! s:Tlist_Cleanup()
-    if has('syntax')
-        silent! syntax clear TagListTitle
-    endif
-    match none
-
-    if exists('b:tlist_ftype') && b:tlist_ftype != ''
-        let count_var_name = 's:tlist_' . b:tlist_ftype . '_count'
-        if exists(count_var_name)
-            let old_ftype = b:tlist_ftype
-            let i = 1
-            while i <= s:tlist_{old_ftype}_count
-                let ttype = s:tlist_{old_ftype}_{i}_name
-                let j = 1
-                let var_name = 'b:tlist_' . old_ftype . '_' . ttype . '_count'
-                if exists(var_name)
-                    let cnt = b:tlist_{old_ftype}_{ttype}_count
-                else
-                    let cnt = 0
-                endif
-                while j <= cnt
-                    unlet! b:tlist_{old_ftype}_{ttype}_{j}
-                    let j = j + 1
-                endwhile
-                unlet! b:tlist_{old_ftype}_{ttype}_count
-                unlet! b:tlist_{old_ftype}_{ttype}_start
-                let i = i + 1
-            endwhile
-        endif
-    endif
-
-    " Clean up all the variables containing the tags output
-    if exists('b:tlist_tag_count')
-        while b:tlist_tag_count > 0
-            unlet! b:tlist_tag_{b:tlist_tag_count}
-            let b:tlist_tag_count = b:tlist_tag_count - 1
-        endwhile
-    endif
-
-    unlet! b:tlist_bufnum
-    unlet! b:tlist_bufname
-    unlet! b:tlist_ftype
-endfunction
-
-function! s:Tlist_Init_Window()
-    " Folding related settings
-    if has('folding')
-        setlocal foldenable
-        setlocal foldmethod=manual
-        setlocal foldcolumn=2
-        setlocal foldtext=v:folddashes.getline(v:foldstart)
-    endif
-
-    " Mark buffer as scratch
-    silent! setlocal buftype=nofile
-    silent! setlocal bufhidden=delete
-    silent! setlocal noswapfile
-    silent! setlocal nowrap
-    silent! setlocal buflisted
-
-    " If the 'number' option is set in the source window, it will affect the
-    " taglist window. So forcefully disable 'number' option for the taglist
-    " window
-    silent! setlocal nonumber
-
-    " Create buffer local mappings for jumping to the tags and sorting the list
-    nnoremap <buffer> <silent> <CR> :call <SID>Tlist_Jump_To_Tag(0)<CR>
-    nnoremap <buffer> <silent> o :call <SID>Tlist_Jump_To_Tag(1)<CR>
-    nnoremap <buffer> <silent> <2-LeftMouse> :call <SID>Tlist_Jump_To_Tag(0)<CR>
-    nnoremap <buffer> <silent> s :call <SID>Tlist_Change_Sort()<CR>
-    nnoremap <buffer> <silent> + :silent! foldopen<CR>
-    nnoremap <buffer> <silent> - :silent! foldclose<CR>
-    nnoremap <buffer> <silent> * :silent! %foldopen!<CR>
-    nnoremap <buffer> <silent> <kPlus> :silent! foldopen<CR>
-    nnoremap <buffer> <silent> <kMinus> :silent! foldclose<CR>
-    nnoremap <buffer> <silent> <kMultiply> :silent! %foldopen!<CR>
-    nnoremap <buffer> <silent> <Space> :call <SID>Tlist_Show_Tag_Prototype()<CR>
-    nnoremap <buffer> <silent> u :call <SID>Tlist_Update_Window()<CR>
-    nnoremap <buffer> <silent> ? :call <SID>Tlist_Show_Help()<CR>
-    nnoremap <buffer> <silent> q :close<CR>
-
-    " Map single left mouse click if the user wants this functionality
-    if g:Tlist_Use_SingleClick == 1
-    nnoremap <silent> <LeftMouse> <LeftMouse>:if bufname("%") =~ "__Tag_List__" <bar> call <SID>Tlist_Jump_To_Tag(0) <bar> endif <CR>
-    endif
-
-    " Define the autocommand to highlight the current tag
-    augroup TagListAutoCmds
-        autocmd!
-        " Display the tag prototype for the tag under the cursor.
-        autocmd CursorHold __Tag_List__ call s:Tlist_Show_Tag_Prototype()
-        " Highlight the current tag 
-        autocmd CursorHold * silent call <SID>Tlist_Highlight_Tag(bufnr('%'), 
-                                        \ line('.'))
-        " Adjust the Vim window width when taglist window is closed
-        autocmd BufDelete __Tag_List__ call <SID>Tlist_Close_Window()
-        " Auto refresh the taglisting window
-        autocmd BufEnter * call <SID>Tlist_Refresh_Window()
-    augroup end
 endfunction
 
 " Tlist_Get_Tag_Linenr()
@@ -1406,7 +1434,7 @@ endfunction
 " contains the current line and highlight it.  The idea behind this function
 " is taken from the ctags.vim script available at the Vim online website.
 function! s:Tlist_Highlight_Tag(bufnum, curline)
-    let filename = bufname(a:bufnum)
+    let filename = fnamemodify(bufname(a:bufnum), ':p')
     if filename == ''
         return
     endif
@@ -1498,7 +1526,7 @@ endfunction
 " Tlist_Get_Tag_Prototype_By_Line
 function! s:Tlist_Get_Tag_Prototype_By_Line(linenum)
     " Make sure the current file has a name
-    let filename = bufname("%")
+    let filename = fnamemodify(bufname("%"), ':p')
     if filename == ''
         return ""
     endif
@@ -1530,8 +1558,6 @@ if g:Tlist_Auto_Open
     autocmd VimEnter * nested Tlist
 endif
 
-autocmd VimLeave * nested call <SID>Tlist_Close_Window()
-autocmd BufWinEnter __Tag_List__ call <SID>Tlist_Init_Window()
 
 " Define the 'Tlist' and 'TlistSync' user commands to open/close taglist
 " window
