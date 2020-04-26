@@ -1,11 +1,14 @@
 " File: taglist.vim
 " Author: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
-" Version: l.96
-" Last Modified: Jan 13, 2003
+" Version: 2.5
+" Last Modified: April 26, 2003
 "
 " Overview
 " --------
-" The "Tag List" plugin provides the following features:
+" The "Tag List" plugin provides an overview of the structure of source code
+" files and allows you to efficiently browse through source code files in
+" different programming languages. The "Tag List" plugin provides the
+" following features:
 "
 " 1. Opens a vertically/horizontally split Vim window with a list of tags
 "    (functions, classes, structures, variables, etc) defined in the current
@@ -20,27 +23,41 @@
 " 7. Displays the scope of a tag.
 " 8. Can optionally use the tag prototype instead of the tag name.
 " 9. The tag list can be sorted either by name or by line number.
-" 10. Supports the following language files: Assembly, ASP, Awk, C, C++,
-"     Cobol, Eiffel, Fortran, Java, Lisp, Lua, Make, Pascal, Perl, PHP,
-"     Python, Rexx, Ruby, Scheme, Shell, Slang, Sql, TCL, Verilog, Vim and
-"     Yacc.
+" 10. Supports the following language files: Assembly, ASP, Awk, Beta, C, C++,
+"     C#, Cobol, Eiffel, Erlang, Fortran, HTML, Java, Javascript, Lisp, Lua,
+"     Make, Pascal, Perl, PHP, Python, Rexx, Ruby, Scheme, Shell, Slang, SML,
+"     Sql, TCL, Verilog, Vim and Yacc.
 " 11. Runs in all the platforms where the exuberant ctags utility and Vim are
 "     supported (this includes MS-Windows and Unix based systems).
 " 12. Runs in both console/terminal and GUI versions of Vim.
 " 13. The ctags output for a file is cached to speed up displaying the taglist
 "     window.
+" 14. Works with the winmanager plugin. Using the winmanager plugin, you can
+"     use Vim plugins like the file explorer, buffer explorer and the taglist
+"     plugin at the same time like an IDE.
+" 15. Can be easily extended to support new languages. Support for existing
+"     languages can be modified easily.
 "
-" This plugin relies on the exuberant ctags utility to generate the tag
-" listing. You can download the exuberant ctags utility from
-" http://ctags.sourceforge.net. The exuberant ctags utility must be installed
-" in your system to use this plugin. You should use exuberant ctags version
-" 5.3 and above.  There is no need for you to create a tags file to use this
-" plugin.
+" To see the screenshots of the taglist plugin in different environments,
+" visit the following page:
 "
-" This script relies on the Vim "filetype" detection mechanism to determine
-" the type of the current file. To turn on filetype detection use
+"       http://www.geocities.com/yegappan/taglist/screenshots.html
 "
-"               :filetype on
+" This plugin relies on the exuberant ctags utility to dynamically generate
+" the tag listing. You can download the exuberant ctags utility from
+"
+"               http://ctags.sourceforge.net
+"
+" The exuberant ctags utility must be installed in your system to use this
+" plugin. You should use exuberant ctags version 5.0 and above.  This plugin
+" doesn't use or create a tags file and there is no need to create a tags file
+" to use this plugin.
+"
+" This plugin relies on the Vim "filetype" detection mechanism to determine
+" the type of the current file. You have to turn on the Vim filetype detection
+" by adding the following line to your .vimrc file:
+"
+"               filetype on
 "
 " This plugin will not work in 'compatible' mode.  Make sure the 'compatible'
 " option is not set. This plugin will not work if you run Vim in the
@@ -49,11 +66,11 @@
 "
 " Installation
 " ------------
-" 1. Copy the taglist.vim script to the $HOME/.vim/plugin directory.  Refer to
+" 1. Copy the taglist.vim plugin to the $HOME/.vim/plugin directory. Refer to
 "    ':help add-plugin', ':help add-global-plugin' and ':help runtimepath' for
 "    more details about Vim plugins.
-" 2. Set the Tlist_Ctags_Cmd variable to point to the exuberant ctags utility
-"    path.
+" 2. Set the Tlist_Ctags_Cmd variable to point to the location of the
+"    exuberant ctags utility (not to the directory).
 " 3. If you are running a terminal/console version of Vim and the terminal
 "    doesn't support changing the window width then set the Tlist_Inc_Winwidth
 "    variable to 0.
@@ -62,38 +79,47 @@
 "
 " Usage
 " -----
-" You can open the taglist window from a source window by using the ":Tlist"
-" command. Invoking this command will toggle (open or close) the taglist
-" window. You can map a key to invoke this command:
+" You can open the taglist window by using the ":Tlist" command. Invoking this
+" command will toggle (open or close) the taglist window. You can map a key to
+" invoke this command. For example, the following command creates a normal
+" mode mapping for the <F8> key to open or close the taglist window.
 "
 "               nnoremap <silent> <F8> :Tlist<CR>
 "
-" Add the above mapping to your ~/.vimrc file.
+" Add the above mapping to your ~/.vimrc file.  You can also open the taglist
+" window on startup using the following command line:
+"
+"               $ vim +Tlist
 "
 " You can close the taglist window from the taglist window by pressing 'q' or
-" using the Vim ":q" command. As you switch between source files, the taglist
-" window will be automatically updated with the tag listing for the current
-" source file.
+" using the Vim ":q" command. You can also use any of the Vim window commands
+" to close the taglist window. Invoking the ":Tlist" command when the taglist
+" window is opened, will close the taglist window.
 "
-" The tag names will grouped by their type (variable, function, class, etc)
-" and displayed as a foldable tree using the Vim folding support. You can
-" collapse the tree using the '-' key or using the Vim zc fold command. You
-" can open the tree using the '+' key or using hte Vim zo fold command. You
-" can open all the fold using the '*' key or using the Vim zR fold command
-" You can also use the mouse to open/close the folds.
+" As you switch between source files, the taglist window will be automatically
+" updated with the tag listing for the current source file.  The tag names
+" will grouped by their type (variable, function, class, etc). For tags with
+" scope information (like class members, structures inside structures, etc),
+" the scope information will be displayed in square brackets "[]" after the
+" tagname.
+" 
+" The tag names will be  displayed as a foldable tree using the Vim folding
+" support. You can collapse the tree using the '-' key or using the Vim zc
+" fold command. You can open the tree using the '+' key or using the Vim zo
+" fold command. You can open all the fold using the '*' key or using the Vim
+" zR fold command You can also use the mouse to open/close the folds.
 "
 " You can select a tag either by pressing the <Enter> key or by double
-" clicking the tag name using the mouse.
+" clicking the tag name using the mouse. You can configure the taglist plugin
+" by setting the 'Tlist_Use_SingleClick' variable to jump to a tag on a single
+" mouse click.
 "
-" For tags with scope information (like class members, structures inside
-" structures, etc), the scope information will be displayed in square brackets
-" "[]" after the tagname.
-"
-" The script will automatically highlight the name of the current tag.  The
+" This plugin will automatically highlight the name of the current tag.  The
 " tag name will be highlighted after 'updatetime' milliseconds. The default
 " value for this Vim option is 4 seconds.  You can also use the ":TlistSync"
 " command to force the highlighting of the current tag. You can map a key to
-" invoke this command:
+" invoke this command. For example, the following command creates a normal
+" mapping for the <F9> key to highlight the current tag name.
 "
 "               nnoremap <silent> <F9> :TlistSync<CR>
 "
@@ -109,6 +135,35 @@
 " appear in the file. You can sort the tags either by name or by order by
 " pressing the "s" key in the taglist window.
 "
+" You can press the 'x' key in the taglist window to maximize the taglist
+" window width/height. The window will be maximized to the maximum possible
+" width/height without closing the other existing windows. You can again press
+" 'x' to restore the taglist window to the default width/height.
+"
+" You can press the '?' key to display help information about using the
+" taglist window. If you again press the '?' key, the help information will be
+" removed.
+"
+" The following table lists the description of the keys that you can use
+" in the taglist window.
+"
+"       Key           Description
+"
+"       <CR>          Jump to the location where the tag under cursor is
+"                     defined.
+"       o             Jump to the location where the tag under cursor is
+"                     defined in a new window.
+"       <Space>       Display the prototype of the tag under the cursor.
+"       u             Update the tags listed in the taglist window
+"       s             Change the sort order of the tags (by name or by order)
+"       x             Zoom-in or Zoom-out the taglist window
+"       +             Open a fold
+"       -             Close a fold
+"       *             Open all folds
+"       q             Close the taglist window
+"       ?             Display help
+"
+"
 " You can use the ":TlistShowPrototype" command to display the prototype of
 " a function in the specified line number. For example,
 "
@@ -117,17 +172,29 @@
 " If the line number is not supplied, this command will display the prototype
 " of the current function.
 "
+" You can also use the taglist plugin with the winmanager plugin. This will
+" allow you to use the file explorer, buffer explorer and the taglist plugin
+" at the same time in different windows. To use the taglist plugin with the
+" winmanager plugin, set 'TagList' in the 'winManagerWindowLayout' variable.
+" For example, to use the file explorer plugin and the taglist plugin at the
+" same time, use the following setting:
+"
+"               let winManagerWindowLayout = 'FileExplorer|TagList'
+"
 " Configuration
 " -------------
 " By changing the following variables you can configure the behavior of this
-" script. Set the following variables in your .vimrc file using the 'let'
+" plugin. Set the following variables in your .vimrc file using the 'let'
 " command.
 "
-" The script uses the Tlist_Ctags_Cmd variable to locate the ctags utility.
+" This plugin uses the Tlist_Ctags_Cmd variable to locate the ctags utility.
 " By default, this is set to ctags. Set this variable to point to the location
-" of the ctags utility in your system:
+" of the ctags utility in your system. Note that this variable should point to
+" the fully qualified exuberant ctags location and NOT to the directory in
+" which exuberant ctags is installed.
 "
 "               let Tlist_Ctags_Cmd = 'd:\tools\ctags.exe'
+"               let Tlist_Ctags_Cmd = '/usr/local/bin/ctags'
 "
 " By default, the tag names will be listed in the order in which they are
 " defined in the file. You can alphabetically sort the tag names by pressing
@@ -159,11 +226,6 @@
 "
 "               let Tlist_Auto_Open = 1
 "
-" You can also open the taglist window on startup using the following command
-" line:
-"
-"               $ vim +Tlist
-"
 " By default, only the tag name will be displayed in the taglist window. If
 " you like to see tag prototypes instead of names, set the
 " Tlist_Display_Prototype variable to 1. By default, this variable is set to 0
@@ -183,7 +245,7 @@
 "
 " By default, when the width of the window is less than 100 and a new taglist
 " window is opened vertically, then the window width will be increased by the
-" value set in the Tlist_WinWidth variable to accomodate the new window.  The
+" value set in the Tlist_WinWidth variable to accommodate the new window.  The
 " value of this variable is used only if you are using a vertically split
 " taglist window.  If your terminal doesn't support changing the window width
 " from Vim (older version of xterm running in a Unix system) or if you see any
@@ -203,6 +265,12 @@
 "
 "               let Tlist_Use_SingleClick = 1
 "
+" Due to a bug in Vim, if you set Tlist_Use_SingleClick to one and try to
+" resize the taglist window using the mouse, then Vim will crash. The fix for
+" this bug will be available in the next version of Vim. In the meantime,
+" instead of resizing the taglist window using the mouse, you can use normal
+" Vim window resizing commands to resize the taglist window.
+"
 " By default, the taglist window will contain text that display the name of
 " the file, sort order information and the key to press to get help. Also,
 " empty lines will be used to separate different groups of tags. If you
@@ -210,6 +278,57 @@
 " to one to get a compact display.
 "
 "               let Tlist_Compact_Format = 1
+"
+" Extending
+" ---------
+" You can extend exuberant ctags to add support for new languages. For more
+" information, visit the following page
+"
+"               http://ctags.sourceforge.net/EXTENDING.html
+"
+" You can extend the taglist plugin to add support for new languages or modify
+" the support for an already supported language by setting the following
+" variables in the .vimrc file.
+"
+" To modify the support for an already supported language, you have to set the
+" tlist_xxx_settings variable. Replace xxx with the Vim filetype name.  To
+" determine the filetype name used by Vim for a file, use the command
+"
+"               :set filetype
+"
+" The format of the value set in the tlist_xxx_settings variable is
+"
+"          <language_name>;flag1:name1;flag2:name2;flag3:name3
+"
+" The different fields are separated by the ';' character.  The first field
+" 'language_name' is the name used by exuberant ctags. This name can be
+" different from the file type name used by Vim. For example, for C++, the
+" language name used by ctags is 'c++' but the filetype name used by Vim is
+" 'cpp'. The remaining fields follow the format "flag:name". The sub-field
+" 'flag' is the language specific flag used by exuberant ctags to generate the
+" corresponding tags.  For example, for the C language, to list only the
+" functions, the 'f' flag should be used. For more information about the flags
+" supported by exuberant ctags for a particular language, read the help text
+" from the 'ctags --help' comand. The sub-field 'name' specifies the title
+" text to use for displaying the tags of a particular type. For example,
+" 'name' can be set to 'functions'.
+"
+" For example, to list only the classes and functions defined in a C++
+" language file, add the following lines to your .vimrc file
+"
+"       let tlist_cpp_settings = 'c++;c:class;f:function'
+"
+" In the above setting, 'cpp' is the Vim filetype name and 'c++' is the name
+" used by the exuberant ctags tool. 'c' and 'f' are the flags passed to
+" exuberant ctags to list classes and functions.
+"
+" For example, to display only functions defined in a C file and to use "My
+" Functions" as the title for the function group, use 
+"
+"       let tlist_c_settings = 'c;f:My Functions'
+"
+" To add support for a new language, set the tlist_xxx_settings variable
+" appropriately as described above.
 "
 " ****************** Do not modify after this line ************************
 if exists('loaded_taglist') || &cp
@@ -255,6 +374,11 @@ if !exists('Tlist_WinWidth')
     let Tlist_WinWidth = 30
 endif
 
+" Horizontally split taglist window height setting
+if !exists('Tlist_WinHeight')
+    let Tlist_WinHeight = 10
+endif
+
 " Automatically open the taglist window on Vim startup
 if !exists('Tlist_Auto_Open')
     let Tlist_Auto_Open = 0
@@ -277,171 +401,149 @@ if !exists('Tlist_Compact_Format')
     let Tlist_Compact_Format = 0
 endif
 
-" File types supported by taglist
-let s:tlist_file_types = 'asm asp awk c cpp cobol eiffel fortran java ' .
-            \ 'lisp lua make pascal perl php python rexx ruby scheme sh ' .
-            \ 'slang sql tcl verilog vim yacc'
-
 " assembly language
-let s:tlist_asm_ctags_args = '--language-force=asm --asm-types=dlmt'
-let s:tlist_asm_tag_types = 'define label macro type'
+let s:tlist_def_asm_settings = 'asm;d:define;l:label;m:macro;t:type'
 
-" asp language
-let s:tlist_asp_ctags_args = '--language-force=asp --asp-types=fs'
-let s:tlist_asp_tag_types = 'function sub'
+" aspperl language
+let s:tlist_def_aspperl_settings = 'asp;f:function;s:sub;v:variable'
+
+" aspvbs language
+let s:tlist_def_aspvbs_settings = 'asp;f:function;s:sub;v:variable'
 
 " awk language
-let s:tlist_awk_ctags_args = '--language-force=awk --awk-types=f'
-let s:tlist_awk_tag_types = 'function'
+let s:tlist_def_awk_settings = 'awk;f:function'
+
+" beta language
+let s:tlist_def_beta_settings = 'beta;f:fragment;s:pattern;v:virtual'
 
 " c language
-let s:tlist_c_ctags_args = '--language-force=c --c-types=dgsutvf'
-let s:tlist_c_tag_types = 'macro enum struct union typedef variable function'
+let s:tlist_def_c_settings = 'c;d:macro;g:enum;s:struct;u:union;t:typedef;' .
+                           \ 'v:variable;f:function'
 
 " c++ language
-let s:tlist_cpp_ctags_args = '--language-force=c++ --c++-types=vdtcgsuf'
-let s:tlist_cpp_tag_types = 'macro typedef class enum struct union ' .
-                            \ 'variable function'
+let s:tlist_def_cpp_settings = 'c++;v:variable;d:macro;t:typedef;c:class;' .
+                             \ 'n:namespace;g:enum;s:struct;u:union;f:function'
+
+" c# language
+let s:tlist_def_cs_settings = 'c#;d:macro;t:typedef;n:namespace;c:class;' .
+                             \ 'E:event;g:enum;s:struct;i:interface;' .
+                             \ 'p:properties;m:method'
 
 " cobol language
-let s:tlist_cobol_ctags_args = '--language-force=cobol --cobol-types=p'
-let s:tlist_cobol_tag_types = 'paragraph'
+let s:tlist_def_cobol_settings = 'cobol;d:data;f:file;g:group;p:paragraph;' .
+                               \ 'P:program;s:section'
 
 " eiffel language
-let s:tlist_eiffel_ctags_args = '--language-force=eiffel --eiffel-types=cf'
-let s:tlist_eiffel_tag_types = 'class feature'
+let s:tlist_def_eiffel_settings = 'eiffel;c:class;f:feature'
+
+" erlang language
+let s:tlist_def_erlang_settings = 'erlang;d:macro;r:record;m:module;f:function'
 
 " fortran language
-let s:tlist_fortran_ctags_args = '--language-force=fortran ' .
-                                 \ '--fortran-types=bcefiklmnpstv'
-let s:tlist_fortran_tag_types = 'block_data common entry function interface ' .
-            \ 'type label module namelist program subroutine derived variable'
+let s:tlist_def_fortran_settings = 'fortran;p:program;b:block data;' .
+                    \ 'c:common;e:entry;i:interface;k:type;l:label;m:module;' .
+                    \ 'n:namelist;t:derived;v:variable;f:function;s:subroutine'
+
+" HTML language
+let s:tlist_def_html_settings = 'html;a:anchor;f:javascript function'
 
 " java language
-let s:tlist_java_ctags_args = '--language-force=java --java-types=pcifm'
-let s:tlist_java_tag_types = 'package class interface field method'
+let s:tlist_def_java_settings = 'java;p:package;c:class;i:interface;' .
+                              \ 'f:field;m:method'
+
+" javascript language
+let s:tlist_def_javascript_settings = 'javascript;f:function'
 
 " lisp language
-let s:tlist_lisp_ctags_args = '--language-force=lisp --lisp-types=f'
-let s:tlist_lisp_tag_types = 'function'
+let s:tlist_def_lisp_settings = 'lisp;f:function'
 
 " lua language
-let s:tlist_lua_ctags_args = '--language-force=lua --lua-types=f'
-let s:tlist_lua_tag_types = 'function'
+let s:tlist_def_lua_settings = 'lua;f:function'
 
 " makefiles
-let s:tlist_make_ctags_args = '--language-force=make --make-types=m'
-let s:tlist_make_tag_types = 'macro'
+let s:tlist_def_make_settings = 'make;m:macro'
 
 " pascal language
-let s:tlist_pascal_ctags_args = '--language-force=pascal --pascal-types=fp'
-let s:tlist_pascal_tag_types = 'function procedure'
+let s:tlist_def_pascal_settings = 'pascal;f:function;p:procedure'
 
 " perl language
-let s:tlist_perl_ctags_args = '--language-force=perl --perl-types=ps'
-let s:tlist_perl_tag_types = 'package subroutine'
+let s:tlist_def_perl_settings = 'perl;p:package;s:subroutine'
 
 " php language
-let s:tlist_php_ctags_args = '--language-force=php --php-types=cf'
-let s:tlist_php_tag_types = 'class function'
+let s:tlist_def_php_settings = 'php;c:class;f:function'
 
 " python language
-let s:tlist_python_ctags_args = '--language-force=python --python-types=cf'
-let s:tlist_python_tag_types = 'class member function'
+let s:tlist_def_python_settings = 'python;c:class;m:member;f:function'
 
 " rexx language
-let s:tlist_rexx_ctags_args = '--language-force=rexx --rexx-types=c'
-let s:tlist_rexx_tag_types = 'subroutine'
+let s:tlist_def_rexx_settings = 'rexx;s:subroutine'
 
 " ruby language
-let s:tlist_ruby_ctags_args = '--language-force=ruby --ruby-types=cfFm'
-let s:tlist_ruby_tag_types = 'mixin class method function singleton_method'
+let s:tlist_def_ruby_settings = 'ruby;c:class;f:method;F:function;' .
+                              \ 'm:singleton method'
 
 " scheme language
-let s:tlist_scheme_ctags_args = '--language-force=scheme --scheme-types=sf'
-let s:tlist_scheme_tag_types = 'set function'
+let s:tlist_def_scheme_settings = 'scheme;s:set;f:function'
 
 " shell language
-let s:tlist_sh_ctags_args = '--language-force=sh --sh-types=f'
-let s:tlist_sh_tag_types = 'function'
+let s:tlist_def_sh_settings = 'sh;f:function'
+
+" C shell language
+let s:tlist_def_csh_settings = 'sh;f:function'
+
+" Z shell language
+let s:tlist_def_zsh_settings = 'sh;f:function'
 
 " slang language
-let s:tlist_slang_ctags_args = '--language-force=slang --slang-types=nf'
-let s:tlist_slang_tag_types = 'namespace function'
+let s:tlist_def_slang_settings = 'slang;n:namespace;f:function'
+
+" sml language
+let s:tlist_def_sml_settings = 'sml;e:exception;c:functor;s:signature;' .
+                             \ 'r:structure;t:type;v:value;f:function'
 
 " sql language
-let s:tlist_sql_ctags_args = '--language-force=sql --sql-types=cfFlPprstTv'
-let s:tlist_sql_tag_types = 'cursor function field local package procedure ' .
-                          \ 'record subtype table trigger variable'
+let s:tlist_def_sql_settings = 'sql;c:cursor;F:field;P:package;r:record;' .
+            \ 's:subtype;t:table;T:trigger;v:variable;f:function;p:procedure'
 
 " tcl language
-let s:tlist_tcl_ctags_args = '--language-force=tcl --tcl-types=p'
-let s:tlist_tcl_tag_types = 'procedure'
+let s:tlist_def_tcl_settings = 'tcl;c:class;f:method;p:procedure'
 
 "verilog language
-let s:tlist_verilog_ctags_args = '--language-force=verilog ' .
-                                \ '--verilog-types=mPrtwpvf'
-let s:tlist_verilog_tag_types = 'module parameter reg task wire port ' .
-                                \ 'variable function'
+let s:tlist_def_verilog_settings = 'verilog;m:module;P:parameter;r:register;' .
+                                 \ 't:task;w:write;p:port;v:variable;f:function'
 
 " vim language
-let s:tlist_vim_ctags_args = '--language-force=vim --vim-types=vf'
-let s:tlist_vim_tag_types = 'variable function'
+let s:tlist_def_vim_settings = 'vim;a:autocmds;v:variable;f:function'
 
 " yacc language
-let s:tlist_yacc_ctags_args = '--language-force=yacc --yacc-types=l'
-let s:tlist_yacc_tag_types = 'label'
+let s:tlist_def_yacc_settings = 'yacc;l:label'
 
-" Tlist_Init()
 " Initialize the taglist script local variables for the supported file types
 " and tag types
-function! s:Tlist_Init()
-    " Process each of the supported file types
-    let fts = s:tlist_file_types . ' '
-    while fts != ''
-        let ftype = strpart(fts, 0, stridx(fts, ' '))
-        if ftype != ''
-            " Get the supported tag types for this file type
-            let txt = 's:tlist_' . ftype . '_tag_types'
-            if exists(txt)
-                " Process each of the supported tag types
-                let tts = s:tlist_{ftype}_tag_types . ' '
-                let cnt = 0
-                while tts != ''
-                    " Create the script variable with the tag type name
-                    let ttype = strpart(tts, 0, stridx(tts, ' '))
-                    if ttype != ''
-                        let cnt = cnt + 1
-                        let s:tlist_{ftype}_{cnt}_name = ttype
-                    endif
-                    let tts = strpart(tts, stridx(tts, ' ') + 1)
-                endwhile
-                " Create the tag type count script local variable
-                let s:tlist_{ftype}_count = cnt
-            endif
-        endif
-        let fts = strpart(fts, stridx(fts, ' ') + 1)
-    endwhile
-
-    let s:tlist_winsize_chgd = 0
-endfunction
-
-" Initialize the script
-call s:Tlist_Init()
+let s:tlist_winsize_chgd = 0
+let s:tlist_win_maximized = 0
+let s:tlist_part_of_winmanager = 0
+" Do not change the name of the taglist title variable. The winmanager plugin
+" relies on this name to determine the title for the taglist plugin.
+let TagList_title = "__Tag_List__"
 
 function! s:Tlist_Show_Help()
-    echo 'Keyboard shortcuts for the taglist window'
-    echo '-----------------------------------------'
-    echo '<Enter> : Jump to the tag definition'
-    echo 'o       : Jump to the tag definition in a new window'
-    echo '<Space> : Display the tag prototype'
-    echo 'u       : Update the tag list'
-    echo 's       : Sort the tag list by ' . 
-                            \ (b:tlist_sort_type == 'name' ? 'order' : 'name')
-    echo '+       : Open a fold'
-    echo '-       : Close a fold'
-    echo '*       : Open all folds'
-    echo 'q       : Close the taglist window'
+    if g:Tlist_Compact_Format == 1
+        " In compact display mode, do not display help
+        return
+    endif
+    if exists("s:tlist_show_help") && s:tlist_show_help == 1
+        let s:tlist_show_help = 0
+    else
+        let s:tlist_show_help = 1
+    endif
+
+    call s:Tlist_Open_Window()
+
+    call s:Tlist_Init_Window(b:tlist_bufnum)
+
+    " Update the taglist window
+    call s:Tlist_Explore_File(b:tlist_bufnum)
 endfunction
 
 " An autocommand is used to refresh the taglist window when entering any
@@ -464,9 +566,24 @@ function! s:Tlist_Skip_Buffer(bufnum)
         return 1
     endif
 
+    let ftype = getbufvar(a:bufnum, '&filetype')
+
     " Skip buffers with filetype not set
-    if getbufvar(a:bufnum, '&filetype') == ''
+    if ftype == ''
         return 1
+    endif
+
+    " Skip files which are not supported by exuberant ctags
+    " First check whether default settings for this filetype are available.
+    " If it is not available, then check whether user specified settings are
+    " available. If both are not available, then don't list the tags for this
+    " filetype
+    let var = 's:tlist_def_' . ftype . '_settings'
+    if !exists(var)
+        let var = 'g:tlist_' . ftype . '_settings'
+        if !exists(var)
+            return 1
+        endif
     endif
 
     let filename = fnamemodify(bufname(a:bufnum), '%:p')
@@ -483,6 +600,103 @@ function! s:Tlist_Skip_Buffer(bufnum)
     endif
 
     return 0
+endfunction
+
+" Tlist_FileType_Init
+" Initialize the ctags arguments and tag variable for the specified
+" file type
+function! s:Tlist_FileType_Init(ftype)
+    " If the user didn't specify any settings, then use the default
+    " ctags args. Otherwise, use the settings specified by the user
+    let var = 'g:tlist_' . a:ftype . '_settings'
+    if exists(var)
+        " User specified ctags arguments
+        let settings = {var} . ';'
+    else
+        " Default ctags arguments
+        let var = 's:tlist_def_' . a:ftype . '_settings'
+        if !exists(var)
+            " No default settings for this file type. This filetype is
+            " not supported
+            return 0
+        endif
+        let settings = s:tlist_def_{a:ftype}_settings . ';'
+    endif
+
+    let msg = 'Invalid ctags option setting - ' . settings
+
+    " Extract the file type to pass to ctags. This can be different from the
+    " file type detected by Vim
+    let pos = stridx(settings, ';')
+    if pos == -1
+        call s:Tlist_Warning_Msg(msg)
+        return 0
+    endif
+    let ctags_ftype = strpart(settings, 0, pos)
+    if ctags_ftype == ''
+        call s:Tlist_Warning_Msg(msg)
+        return 0
+    endif
+    " Make sure a valid filetype is supplied. If the user didn't specify a
+    " valid filetype, then the ctags option settings may be treated as the
+    " filetype
+    if ctags_ftype =~ ':'
+        call s:Tlist_Warning_Msg(msg)
+        return 0
+    endif
+
+    " Remove the file type from settings
+    let settings = strpart(settings, pos + 1)
+    if settings == ''
+        call s:Tlist_Warning_Msg(msg)
+        return 0
+    endif
+
+    " Process all the specified ctags flags. The format is
+    " flag1:name1;flag2:name2;flag3:name3
+    let ctags_flags = ''
+    let cnt = 0
+    while settings != ''
+        " Extract the flag
+        let pos = stridx(settings, ':')
+        if pos == -1
+            call s:Tlist_Warning_Msg(msg)
+            return 0
+        endif
+        let flag = strpart(settings, 0, pos) 
+        if flag == ''
+            call s:Tlist_Warning_Msg(msg)
+            return 0
+        endif
+        " Remove the flag from settings
+        let settings = strpart(settings, pos + 1)
+
+        " Extract the tag type name
+        let pos = stridx(settings, ';')
+        if pos == -1
+            call s:Tlist_Warning_Msg(msg)
+            return 0
+        endif
+        let name = strpart(settings, 0, pos)
+        if name == ''
+            call s:Tlist_Warning_Msg(msg)
+            return 0
+        endif
+        let settings = strpart(settings, pos + 1)
+
+        let cnt = cnt + 1
+
+        let s:tlist_{a:ftype}_{cnt}_name = flag
+        let s:tlist_{a:ftype}_{cnt}_fullname = name
+        let ctags_flags = ctags_flags . flag
+    endwhile
+
+    let s:tlist_{a:ftype}_ctags_args = '--language-force=' . ctags_ftype .
+                            \ ' --' . ctags_ftype . '-types=' . ctags_flags
+    let s:tlist_{a:ftype}_count = cnt
+    let s:tlist_{a:ftype}_ctags_flags = ctags_flags
+
+    return 1
 endfunction
 
 " Tlist_Cleanup()
@@ -534,11 +748,14 @@ endfunction
 " Tlist_Open_Window
 " Create a new taglist window. If it is already open, clear it
 function! s:Tlist_Open_Window()
-    " Tag list window name
-    let bname = '__Tag_List__'
+    " If used with winmanager don't open windows. Winmanager will handle
+    " the window/buffer management
+    if s:tlist_part_of_winmanager
+        return
+    endif
 
     " Cleanup the taglist window listing, if the window is open
-    let winnum = bufwinnr(bname)
+    let winnum = bufwinnr(g:TagList_title)
     if winnum != -1
         " Jump to the existing window
         if winnr() != winnum
@@ -552,8 +769,8 @@ function! s:Tlist_Open_Window()
             " If a single window is used for all files, then open the tag
             " listing window at the very bottom
             let win_dir = 'botright'
-            " Default horizontal window height is 10
-            let win_width = 10
+            " Horizontal window height
+            let win_size = g:Tlist_WinHeight
         else
             " Increase the window size, if needed, to accomodate the new
             " window
@@ -572,22 +789,44 @@ function! s:Tlist_Open_Window()
             else
                 let win_dir = 'topleft vertical'
             endif
-            let win_width = g:Tlist_WinWidth
+            let win_size = g:Tlist_WinWidth
         endif
 
         " If the tag listing temporary buffer already exists, then reuse it.
         " Otherwise create a new buffer
-        let bufnum = bufnr(bname)
+        let bufnum = bufnr(g:TagList_title)
         if bufnum == -1
             " Create a new buffer
-            let wcmd = bname
+            let wcmd = g:TagList_title
         else
             " Edit the existing buffer
             let wcmd = '+buffer' . bufnum
         endif
 
         " Create the taglist window
-        exe 'silent! ' . win_dir . ' ' . win_width . 'split ' . wcmd
+        exe 'silent! ' . win_dir . ' ' . win_size . 'split ' . wcmd
+    endif
+endfunction
+
+" Tlist_Zoom_Window
+" Zoom (maximize/minimize) the taglist window
+function! s:Tlist_Zoom_Window()
+    if s:tlist_win_maximized == 1
+        if g:Tlist_Use_Horiz_Window == 1
+            exe 'resize ' . g:Tlist_WinHeight
+        else
+            exe 'vert resize ' . g:Tlist_WinWidth
+        endif
+        let s:tlist_win_maximized = 0
+    else
+        " Set the window size to the maximum possible without closing other
+        " windows
+        if g:Tlist_Use_Horiz_Window == 1
+            resize
+        else
+            vert resize
+        endif
+        let s:tlist_win_maximized = 1
     endif
 endfunction
 
@@ -631,11 +870,34 @@ function! s:Tlist_Init_Window(bufnum)
     " Mark the buffer as modifiable
     setlocal modifiable
 
+    if s:tlist_part_of_winmanager
+        " To handle a bug in the winmanager plugin, add a space at the
+        " last line
+        call setline('$', ' ')
+    endif
+
     if g:Tlist_Compact_Format == 0
-        call append(0, '" Press ? for help')
-        call append(1, '" Sorted by ' . b:tlist_sort_type)
-        call append(2, '" =' . fnamemodify(filename, ':t') . ' (' . 
+        if exists("s:tlist_show_help") && s:tlist_show_help == 1
+            call append(0, '" <enter> : Jump to tag definition')
+            call append(1, '" o : Jump to tag definition in new window')
+            call append(2, '" <space> : Display tag prototype')
+            call append(3, '" u : Update tag list')
+            call append(4, '" s : Select sort field')
+            call append(5, '" x : Zoom-out/Zoom-in taglist window')
+            call append(6, '" + : Open a fold')
+            call append(7, '" - : Close a fold')
+            call append(8, '" * : Open all folds')
+            call append(9, '" q : Close the taglist window')
+            call append(10, '" ? : Remove help text')
+            call append(11, '" Sorted by ' . b:tlist_sort_type)
+            call append(12, '"= ' . fnamemodify(filename, ':t') . ' (' . 
                                    \ fnamemodify(filename, ':p:h') . ')')
+        else
+            call append(0, '" Press ? to display help text')
+            call append(1, '" Sorted by ' . b:tlist_sort_type)
+            call append(2, '"= ' . fnamemodify(filename, ':t') . ' (' . 
+                                   \ fnamemodify(filename, ':p:h') . ')')
+        endif
     endif
 
     " Mark the buffer as not modifiable
@@ -644,6 +906,9 @@ function! s:Tlist_Init_Window(bufnum)
     " Highlight the comments
     if has('syntax')
         syntax match TagListComment '^" .*'
+        syntax match TagListSortBy  '^" Sorted by .*'
+        syntax match TagListCurDir  '^"= .*'
+        syntax match TagScope  '\s\[.\{-\}\]$'
 
         " Colors used to highlight the selected tag name
         highlight clear TagName
@@ -658,6 +923,12 @@ function! s:Tlist_Init_Window(bufnum)
         highlight link TagListComment Comment
         highlight clear TagListTitle
         highlight link TagListTitle Title
+        highlight clear TagListSortBy
+        highlight link TagListSortBy String
+        highlight clear TagListCurDir
+        highlight link TagListCurDir Statement
+        highlight clear TagScope
+        highlight link TagScope Identifier
     endif
 
     " Folding related settings
@@ -668,12 +939,20 @@ function! s:Tlist_Init_Window(bufnum)
         setlocal foldtext=v:folddashes.getline(v:foldstart)
     endif
 
+    if !s:tlist_part_of_winmanager
     " Mark buffer as scratch
     silent! setlocal buftype=nofile
     silent! setlocal bufhidden=delete
     silent! setlocal noswapfile
+    " Due to a bug in Vim 6.0, the winbufnr() function fails for unlisted
+    " buffers. So if the taglist buffer is unlisted, multiple taglist
+    " windows will be opened. This bug is fixed in Vim 6.1 and above
+    if v:version >= 601
+        silent! setlocal nobuflisted
+    endif
+    endif
+
     silent! setlocal nowrap
-    silent! setlocal nobuflisted
 
     " If the 'number' option is set in the source window, it will affect the
     " taglist window. So forcefully disable 'number' option for the taglist
@@ -693,17 +972,35 @@ function! s:Tlist_Init_Window(bufnum)
     nnoremap <buffer> <silent> <kMultiply> :silent! %foldopen!<CR>
     nnoremap <buffer> <silent> <Space> :call <SID>Tlist_Show_Tag_Prototype()<CR>
     nnoremap <buffer> <silent> u :call <SID>Tlist_Update_Window()<CR>
+    nnoremap <buffer> <silent> x :call <SID>Tlist_Zoom_Window()<CR>
     nnoremap <buffer> <silent> ? :call <SID>Tlist_Show_Help()<CR>
     nnoremap <buffer> <silent> q :close<CR>
+
+    " Insert mode mappings
+    inoremap <buffer> <silent> <CR>    <C-o>:call <SID>Tlist_Jump_To_Tag(0)<CR>
+    " Windows needs return
+    inoremap <buffer> <silent> <Return> <C-o>:call <SID>Tlist_Jump_To_Tag(0)<CR>
+    inoremap <buffer> <silent> o        <C-o>:call <SID>Tlist_Jump_To_Tag(1)<CR>
+    inoremap <buffer> <silent> <2-LeftMouse> <C-o>:call 
+                                            \ <SID>Tlist_Jump_To_Tag(0)<CR>
+    inoremap <buffer> <silent> s        <C-o>:call <SID>Tlist_Change_Sort()<CR>
+    inoremap <buffer> <silent> +             <C-o>:silent! foldopen<CR>
+    inoremap <buffer> <silent> -             <C-o>:silent! foldclose<CR>
+    inoremap <buffer> <silent> *             <C-o>:silent! %foldopen!<CR>
+    inoremap <buffer> <silent> <kPlus>       <C-o>:silent! foldopen<CR>
+    inoremap <buffer> <silent> <kMinus>      <C-o>:silent! foldclose<CR>
+    inoremap <buffer> <silent> <kMultiply>   <C-o>:silent! %foldopen!<CR>
+    inoremap <buffer> <silent> <Space>       <C-o>:call 
+                                    \ <SID>Tlist_Show_Tag_Prototype()<CR>
+    inoremap <buffer> <silent> u    <C-o>:call <SID>Tlist_Update_Window()<CR>
+    inoremap <buffer> <silent> ?    <C-o>:call <SID>Tlist_Show_Help()<CR>
+    inoremap <buffer> <silent> q    <C-o>:close<CR>
+ 
 
     " Map single left mouse click if the user wants this functionality
     if g:Tlist_Use_SingleClick == 1
     nnoremap <silent> <LeftMouse> <LeftMouse>:if bufname("%") =~ "__Tag_List__"
                         \ <bar> call <SID>Tlist_Jump_To_Tag(0) <bar> endif <CR>
-    else
-        if hasmapto('<LeftMouse>')
-            nunmap <LeftMouse>
-        endif
     endif
 
     " Define the autocommand to highlight the current tag
@@ -714,10 +1011,12 @@ function! s:Tlist_Init_Window(bufnum)
         " Highlight the current tag 
         autocmd CursorHold * silent call <SID>Tlist_Highlight_Tag(bufnr('%'), 
                                         \ line('.'))
-        " Adjust the Vim window width when taglist window is closed
         autocmd BufUnload __Tag_List__ call <SID>Tlist_Close_Window()
+        if !s:tlist_part_of_winmanager
+        " Adjust the Vim window width when taglist window is closed
         " Auto refresh the taglisting window
         autocmd BufEnter * call <SID>Tlist_Refresh_Window()
+        endif
     augroup end
 endfunction
 
@@ -727,6 +1026,21 @@ function! s:Tlist_Close_Window()
     " Remove the autocommands for the taglist window
     silent! autocmd! TagListAutoCmds
 
+    " Clear all the highlights
+    match none
+
+    if has('syntax')
+        silent! syntax clear TagListTitle
+    endif
+
+    " Remove the left mouse click mapping if it was setup initially
+    if g:Tlist_Use_SingleClick == 1
+        if hasmapto('<LeftMouse>')
+            nunmap <LeftMouse>
+        endif
+    endif
+
+    if !s:tlist_part_of_winmanager
     if g:Tlist_Use_Horiz_Window || g:Tlist_Inc_Winwidth == 0 ||
                 \ s:tlist_winsize_chgd == 0 ||
                 \ &columns < (80 + g:Tlist_WinWidth)
@@ -736,6 +1050,7 @@ function! s:Tlist_Close_Window()
     else
         " Adjust the Vim window width
         let &columns= &columns - (g:Tlist_WinWidth + 1)
+    endif
     endif
 endfunction
 
@@ -751,16 +1066,13 @@ function! s:Tlist_Explore_File(bufnum)
         return
     endif
 
-    " Translate Vim filetypes to that supported by exuberant ctags
-    if ftype == 'aspperl' || ftype == 'aspvbs'
-        let ftype = 'asp'
-    elseif ftype =~ '\<[cz]\=sh\>'
-        let ftype = 'sh'
-    endif
-
-    " Make sure the current filetype is supported by exuberant ctags
-    if stridx(s:tlist_file_types, ftype) == -1
-        return
+    " If the tag types for this filetype are not yet created, then create
+    " them now
+    let var = 's:tlist_' . ftype . '_count'
+    if !exists(var)
+        if s:Tlist_FileType_Init(ftype) == 0
+            return
+        endif
     endif
 
     " If the cached ctags output exists for the specified buffer, then use it.
@@ -798,7 +1110,7 @@ function! s:Tlist_Explore_File(bufnum)
         endwhile
     else
         " Exuberant ctags arguments to generate a tag list
-        let ctags_args = ' -f - --format=2 --excmd=pattern --fields=nKs '
+        let ctags_args = ' -f - --format=2 --excmd=pattern --fields=nks '
 
         " Form the ctags argument depending on the sort type 
         if b:tlist_sort_type == 'name'
@@ -814,8 +1126,21 @@ function! s:Tlist_Explore_File(bufnum)
         let ctags_cmd = g:Tlist_Ctags_Cmd . ctags_args
         let ctags_cmd = ctags_cmd . ' "' . filename . '"'
 
+        " In Windows 95, if not using cygwin, disable the 'shellslash'
+        " option. Otherwise, this will cause problems when running the
+        " ctags command.
+        if has("win95") && !has("win32unix")
+            let myshellslash = &shellslash
+            set noshellslash
+        endif
+
         " Run ctags and get the tag list
         let cmd_output = system(ctags_cmd)
+
+        " Restore the value of the 'shellslash' option.
+        if has("win95") && !has("win32unix")
+            let &shellslash = myshellslash
+        endif
 
         " Cache the ctags output with a buffer local variable
         call setbufvar(a:bufnum, 'tlist_valid_cache', 'Yes')
@@ -861,6 +1186,11 @@ function! s:Tlist_Explore_File(bufnum)
 
             if ttype == ''
                 " Line is not in proper tags format
+                continue
+            endif
+
+            " make sure the tag type is supported
+            if s:tlist_{ftype}_ctags_flags !~# ttype
                 continue
             endif
 
@@ -931,6 +1261,12 @@ function! s:Tlist_Explore_File(bufnum)
         endwhile
     endif
 
+    " If we are using a hidden taglist window, then no need to update the
+    " taglist window
+    if exists("g:taglist_hidden")
+        return
+    endif
+
     " Set report option to a huge value to prevent informational messages
     " while adding lines to the taglist window
     let old_report = &report
@@ -947,10 +1283,10 @@ function! s:Tlist_Explore_File(bufnum)
         if l:tlist_{ftype}_{ttype} != ''
             if g:Tlist_Compact_Format == 0
                 let b:tlist_{ftype}_{ttype}_start = line('.') + 1
-                silent! put =ttype
+                silent! put =s:tlist_{ftype}_{i}_fullname
             else
                 let b:tlist_{ftype}_{ttype}_start = line('.')
-                silent! put! =ttype
+                silent! put! =s:tlist_{ftype}_{i}_fullname
             endif
             silent! put =l:tlist_{ftype}_{ttype}
 
@@ -975,6 +1311,12 @@ function! s:Tlist_Explore_File(bufnum)
         let i = i + 1
     endwhile
 
+    if s:tlist_part_of_winmanager
+        " To handle a bug in the winmanager plugin, add a space at the
+        " last line
+        call setline('$', ' ')
+    endif
+
     " Mark the buffer as not modifiable
     setlocal nomodifiable
 
@@ -997,11 +1339,8 @@ endfunction
 function! s:Tlist_Toggle_Window(bufnum)
     let curline = line('.')
 
-    " Tag list window name
-    let bname = '__Tag_List__'
-
     " If taglist window is open then close it.
-    let winnum = bufwinnr(bname)
+    let winnum = bufwinnr(g:TagList_title)
     if winnum != -1
         if winnr() == winnum
             " Already in the taglist window. Close it and return
@@ -1021,6 +1360,8 @@ function! s:Tlist_Toggle_Window(bufnum)
         endif
         return
     endif
+
+    let s:tlist_part_of_winmanager = 0
 
     " Open the taglist window
     call s:Tlist_Open_Window()
@@ -1049,9 +1390,6 @@ function! s:Tlist_Extract_Tagtype(tag_txt)
     let start = strridx(a:tag_txt, '/;"' . "\t") + 4
     let end = strridx(a:tag_txt, 'line:') - 1
     let ttype = strpart(a:tag_txt, start, end - start)
-
-    " Replace all space characters in the tag type with underscore (_)
-    let ttype = substitute(ttype, ' ', '_', 'g')
 
     return ttype
 endfunction
@@ -1090,16 +1428,13 @@ function! s:Tlist_Refresh_Window()
 
     let curline = line('.')
 
-    " Tag list window name
-    let bname = '__Tag_List__'
-
     " Make sure the taglist window is open. Otherwise, no need to refresh
-    let winnum = bufwinnr(bname)
+    let winnum = bufwinnr(g:TagList_title)
     if winnum == -1
         return
     endif
 
-    let bno = bufnr(bname)
+    let bno = bufnr(g:TagList_title)
 
     let cur_bufnr = bufnr('%')
 
@@ -1126,8 +1461,10 @@ function! s:Tlist_Refresh_Window()
     " Refresh the taglist window
     redraw
 
+    if !s:tlist_part_of_winmanager
     " Jump back to the original window
     exe cur_winnr . 'wincmd w'
+    endif
 endfunction
 
 " Tlist_Change_Sort()
@@ -1269,6 +1606,9 @@ function! s:Tlist_Jump_To_Tag(new_window)
 
     let s:Tlist_Skip_Refresh = 1
 
+    if s:tlist_part_of_winmanager
+        call WinManagerFileEdit(bufname(b:tlist_bufnum), a:new_window)
+    else
     " Goto the window containing the file.  If the window is not there, open a
     " new window
     let winnum = bufwinnr(b:tlist_bufnum)
@@ -1278,7 +1618,7 @@ function! s:Tlist_Jump_To_Tag(new_window)
             " Go to the taglist window to change the window size to the user
             " configured value
             wincmd p
-            exe 'resize 10'
+            exe 'resize ' . g:Tlist_WinHeight
             " Go back to the file window
             wincmd p
         else
@@ -1299,6 +1639,7 @@ function! s:Tlist_Jump_To_Tag(new_window)
         if a:new_window
             split
         endif
+    endif
     endif
 
     " Jump to the tag
@@ -1446,16 +1787,13 @@ function! s:Tlist_Highlight_Tag(bufnum, curline)
         return
     endif
 
-    " Tag list window name
-    let bname = '__Tag_List__'
-
     " Make sure the taglist window is present
-    let winnum = bufwinnr(bname)
+    let winnum = bufwinnr(g:TagList_title)
     if winnum == -1
         return
     endif
 
-    let bno = bufnr(bname)
+    let bno = bufnr(g:TagList_title)
 
     " Make sure we have the tag listing for the current file
     if getbufvar(bno, 'tlist_bufnum') != a:bufnum
@@ -1465,6 +1803,11 @@ function! s:Tlist_Highlight_Tag(bufnum, curline)
     " If there are no tags for this file, then no need to proceed further
     if getbufvar(bno, 'tlist_tag_count') == 0
         return
+    endif
+
+    " If part of winmanager then disable winmanager autocommands
+    if s:tlist_part_of_winmanager
+        call WinManagerSuspendAUs()
     endif
 
     " Save the original window number
@@ -1491,6 +1834,9 @@ function! s:Tlist_Highlight_Tag(bufnum, curline)
             let s:Tlist_Skip_Refresh = 1
             exe org_winnr . 'wincmd w'
             let s:Tlist_Skip_Refresh = 0
+        endif
+        if s:tlist_part_of_winmanager
+            call WinManagerResumeAUs()
         endif
         return
     endif
@@ -1525,6 +1871,10 @@ function! s:Tlist_Highlight_Tag(bufnum, curline)
         let s:Tlist_Skip_Refresh = 1
         exe org_winnr . 'wincmd w'
         let s:Tlist_Skip_Refresh = 0
+    endif
+
+    if s:tlist_part_of_winmanager
+        call WinManagerResumeAUs()
     endif
 
     return
@@ -1565,9 +1915,40 @@ if g:Tlist_Auto_Open
     autocmd VimEnter * nested Tlist
 endif
 
-
 " Define the 'Tlist' and 'TlistSync' user commands to open/close taglist
 " window
 command! -nargs=0 Tlist call s:Tlist_Toggle_Window(bufnr('%'))
 command! -nargs=0 TlistSync call s:Tlist_Highlight_Tag(bufnr('%'), line('.'))
 command! -nargs=? TlistShowPrototype echo s:Tlist_Get_Tag_Prototype_By_Line(<q-args>)
+
+" Winmanager integration
+
+" Initialization required for integration with winmanager
+function! TagList_Start()
+    let s:tlist_part_of_winmanager = 1
+
+    if bufname('%') != '__Tag_List__'
+        return
+    endif
+
+    let bufnum = WinManagerGetLastEditedFile()
+
+    " If the tags for the buffer is already listed, then no need to do
+    " anything
+    if exists('b:tlist_bufnum') && bufnum == b:tlist_bufnum
+        return
+    endif
+
+    call s:Tlist_Init_Window(bufnum)
+
+    " Open the taglist window
+    call s:Tlist_Explore_File(bufnum)
+endfunction
+
+function! TagList_IsValid()
+    return 0
+endfunction
+
+function! TagList_WrapUp()
+    return 0
+endfunction
