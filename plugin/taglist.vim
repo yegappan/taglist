@@ -1,7 +1,7 @@
 " File: taglist.vim
 " Author: Yegappan Lakshmanan
-" Version: l.9
-" Last Modified: Oct 07, 2002
+" Version: l.91
+" Last Modified: Nov 5, 2002
 "
 " Overview
 " --------
@@ -276,7 +276,7 @@ let s:tlist_fortran_tag_types = 'block_data common entry function interface type
 
 " java language
 let s:tlist_java_ctags_args = '--language-force=java --java-types=pcifm'
-let s:tlist_java_tag_types = 'interface package class method field'
+let s:tlist_java_tag_types = 'package class interface field method'
 
 " lisp language
 let s:tlist_lisp_ctags_args = '--language-force=lisp --lisp-types=f'
@@ -401,6 +401,35 @@ function! s:Tlist_Warning_Msg(msg)
     echohl None
 endfunction
 
+" Tlist_Skip_Buffer()
+" Check whether tag listing is supported for the specified buffer.
+function! s:Tlist_Skip_Buffer(bufnum)
+    " Skip buffers with 'buftype' set to nofile, nowrite, quickfix or help
+    if getbufvar(a:bufnum, '&buftype') != ''
+        return 1
+    endif
+
+    " Skip buffers with filetype not set
+    if getbufvar(a:bufnum, '&filetype') == ''
+        return 1
+    endif
+
+    let filename = fnamemodify(bufname(a:bufnum), '%:p')
+
+    " Skip buffers with no names
+    if filename == ''
+        return 1
+    endif
+
+    " Skip files which are not readable or files which are not yet stored
+    " to the disk
+    if !filereadable(filename)
+        return 1
+    endif
+
+    return 0
+endfunction
+
 " Tlist_Toggle_Window()
 " Open or close a taglist window
 function! s:Tlist_Toggle_Window(bufnum)
@@ -412,16 +441,21 @@ function! s:Tlist_Toggle_Window(bufnum)
     " If taglist window is open then close it.
     let winnum = bufwinnr(bname)
     if winnum != -1
-        " Goto the taglist window, close it and then come back to the original
-        " window
-        let curbufnr = bufnr('%')
-        exe winnum . 'wincmd w'
-        close
-        " Need to jump back to the original window only if we are not already
-        " in that window
-        let winnum = bufwinnr(curbufnr)
-        if winnr() != winnum
+        if winnr() == winnum
+            " Already in the taglist window. Close it and return
+            close
+        else
+            " Goto the taglist window, close it and then come back to the
+            " original window
+            let curbufnr = bufnr('%')
             exe winnum . 'wincmd w'
+            close
+            " Need to jump back to the original window only if we are not
+            " already in that window
+            let winnum = bufwinnr(curbufnr)
+            if winnr() != winnum
+                exe winnum . 'wincmd w'
+            endif
         endif
         return
     endif
@@ -630,8 +664,16 @@ function! s:Tlist_Explore_File(bufnum)
         let ctags_args = ctags_args . ' ' . s:tlist_{ftype}_ctags_args
 
         " Ctags command to produce output with regexp for locating the tags
-        let ctags_cmd = g:Tlist_Ctags_Cmd . ctags_args
-        let ctags_cmd = ctags_cmd . ' "' . filename . '"'
+        if (has('win32') && !has('win95'))
+            " When using cmd.exe in MS-Windows, extra quotes must be added at
+            " the beginning and at the end of the command line. These will
+            " be removed by cmd.exe. Refer to cmd /? for more information
+            let ctags_cmd = '""' . g:Tlist_Ctags_Cmd . '"' . ctags_args
+            let ctags_cmd = ctags_cmd . ' "' . filename . '""'
+        else
+            let ctags_cmd = '"' . g:Tlist_Ctags_Cmd . '"' . ctags_args
+            let ctags_cmd = ctags_cmd . ' "' . filename . '"'
+        endif
 
         " Run ctags and get the tag list
         let cmd_output = system(ctags_cmd)
@@ -844,13 +886,14 @@ function! s:Tlist_Refresh_Window()
         return
     endif
 
-    let filename = expand('%:p')
-    let curline = line('.')
-
-    " No need to refresh taglist window
-    if filename =~? '__Tag_List__'
+    " If the buffer doesn't support tag listing, skip it
+    if s:Tlist_Skip_Buffer(bufnr('%'))
         return
     endif
+
+    let filename = expand('%:p')
+
+    let curline = line('.')
 
     " Tag list window name
     let bname = '__Tag_List__'
