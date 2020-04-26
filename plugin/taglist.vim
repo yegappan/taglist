@@ -1,7 +1,7 @@
 " File: taglist.vim
 " Author: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
-" Version: l.93
-" Last Modified: Dec 15, 2002
+" Version: l.94
+" Last Modified: Dec 19, 2002
 "
 " Overview
 " --------
@@ -201,7 +201,15 @@
 " you single click on the tag name using the mouse. By default this variable
 " is set to zero.
 "
-"               let Tlist_Use_SingleClick = 0
+"               let Tlist_Use_SingleClick = 1
+"
+" By default, the taglist window will contain text that display the name of
+" the file, sort order information and the key to press to get help. Also,
+" empty lines will be used to separate different groups of tags. If you
+" don't need these information, you can set the Tlist_Compact_Format variable
+" to one to get a compact display.
+"
+"               let Tlist_Compact_Format = 1
 "
 " ****************** Do not modify after this line ************************
 if exists('loaded_taglist') || &cp
@@ -261,6 +269,12 @@ endif
 " Only double click using the mouse will be processed.
 if !exists('Tlist_Use_SingleClick')
     let Tlist_Use_SingleClick = 0
+endif
+
+" Control whether additional help is displayed as part of the taglist or not.
+" Also, controls whether empty lines are used to separate the tag tree.
+if !exists('Tlist_Compact_Format')
+    let Tlist_Compact_Format = 0
 endif
 
 " File types supported by taglist
@@ -602,10 +616,12 @@ function! s:Tlist_Open_Window(bufnum)
     let b:tlist_bufname = fnamemodify(bufname(a:bufnum), ':p')
     let b:tlist_ftype = getbufvar(a:bufnum, '&filetype')
 
-    call append(0, '" Press ? for help')
-    call append(1, '" Sorted by ' . b:tlist_sort_type)
-    call append(2, '" =' . fnamemodify(filename, ':t') . ' (' . 
-                               \ fnamemodify(filename, ':p:h') . ')')
+    if g:Tlist_Compact_Format == 0
+        call append(0, '" Press ? for help')
+        call append(1, '" Sorted by ' . b:tlist_sort_type)
+        call append(2, '" =' . fnamemodify(filename, ':t') . ' (' . 
+                                   \ fnamemodify(filename, ':p:h') . ')')
+    endif
 
     " Mark the buffer as not modifiable
     setlocal nomodifiable
@@ -871,8 +887,13 @@ function! s:Tlist_Explore_File(bufnum)
         let ttype = s:tlist_{ftype}_{i}_name
         " Add the tag type only if there are tags for that type
         if l:tlist_{ftype}_{ttype} != ''
-            let b:tlist_{ftype}_{ttype}_start = line('.') + 1
-            silent! put =ttype
+            if g:Tlist_Compact_Format == 0
+                let b:tlist_{ftype}_{ttype}_start = line('.') + 1
+                silent! put =ttype
+            else
+                let b:tlist_{ftype}_{ttype}_start = line('.')
+                silent! put! =ttype
+            endif
             silent! put =l:tlist_{ftype}_{ttype}
 
             " create a fold for this tag type
@@ -889,7 +910,9 @@ function! s:Tlist_Explore_File(bufnum)
             endif
             " Separate the tag types with a empty line
             normal! G
-            silent! put =''
+            if g:Tlist_Compact_Format == 0
+                silent! put =''
+            endif
         endif
         let i = i + 1
     endwhile
