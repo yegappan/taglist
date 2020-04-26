@@ -1,7 +1,7 @@
 " File: taglist.vim
 " Author: Yegappan Lakshmanan
-" Version: l.5
-" Last Modified: August 15, 2002
+" Version: l.6
+" Last Modified: Sep 6, 2002
 "
 " Overview
 " --------
@@ -21,16 +21,18 @@
 " C++, Cobol, Eiffel, Fortran, Java, Lisp, Make, Pascal, Perl, PHP, Python,
 " Rexx, Ruby, Scheme, Shell, Slang, TCL and Vim.
 "
-" You can open the taglist window from a source window by pressing the key
-" defined by the 'Tlist_Key' variable. By default, this is set to <F8>.  To
-" close the taglist window from the source window press the <F8> key again.
+" You can open the taglist window from a source window by using the ":Tlist"
+" command. Invoking this command will toggle (open or close) the taglist
+" window. You can map a key to invoke this command:
+"
+"               nnoremap <silent> <F8> :Tlist<CR>
+"
+" Add the above mapping to your ~/.vimrc file.
+"
 " You can close the taglist window from the taglist window by pressing 'q' or
 " using the Vim ":q" command. As you switch between source files, the taglist
 " window will be automatically updated with the tag listing for the current
 " source file.
-"
-" You can also open the taglist window using the ":Tlist" command. Invoking
-" this command will toggle (open or close) the taglist window.
 "
 " The tag names will grouped by type (variable, function, class, etc) and
 " displayed as a tree using the Vim folding support. You can collapse the
@@ -47,9 +49,13 @@
 "
 " The script will automatically highlight the name of the current tag.  The
 " tag name will be highlighted after 'updatetime' milliseconds. The default
-" value for this Vim option is 4 seconds.  You can also press the key set in
-" the 'Tlist_Sync_Key' variable to force the highlighting of the current tag.
-" By default, this is set to <F9>.
+" value for this Vim option is 4 seconds.  You can also use the ":TlistSync"
+" command to force the highlighting of the current tag. You can map a key to
+" invoke this command:
+"
+"               nnoremap <silent> <F9> :TlistSync<CR>
+"
+" Add the above mapping to your ~/.vimrc file.
 "
 " If you place the cursor on a tag name in the "Tag List" window, then the tag
 " prototype will be displayed at the Vim status line after 'updatetime'
@@ -80,20 +86,6 @@
 " point to the location of the ctags utility in your system
 "
 "               let Tlist_Ctags_Cmd = 'd:\tools\ctags.exe'
-"
-" To open the tag list window, you have to press the key defined by the
-" Tlist_Key variable. By default, this variable is set to the <F8> key.
-" You can modify this to a different key in your .vimrc file:
-"
-"               let Tlist_Key = '\l'
-"
-" When the cursor is not moved for a period specified by the 'updatetime' Vim
-" option, the script will automatically highlight the tag under the cursor. To
-" force the current tag name highlight, you can press the key defined by the
-" Tlist_Sync_Key variable. By default, this variable is set to the <F9> key.
-" You can modify this to a different key in your .vimrc file:
-"
-"               let Tlist_Sync_Key = '\h'
 "
 " By default, the tag names will be listed in the order in
 " which they are defined in the file. You can alphabetically sort the tag
@@ -161,10 +153,15 @@
 "
 "               let Tlist_Inc_Winwidth = 0
 "
-" The default width of vertically split tag list window will be 20.  This can
+" The default width of vertically split tag list window will be 30.  This can
 " be changed by modifying the Tlist_WinWidth variable:
 "
-"               let Tlist_WinWidth = 30
+"               let Tlist_WinWidth = 20
+"
+" Note that the value of the 'winwidth' option setting determines the minimum
+" width of the current window. If you set the 'Tlist_WinWidth' variable to a
+" value less than that of the 'winwidth' option setting, then Vim will use the
+" value of the 'winwidth' option.
 "
 " ****************** Do not modify after this line ************************
 if exists('loaded_taglist') || &cp
@@ -175,16 +172,6 @@ let loaded_taglist=1
 " Location of the exuberant ctags tool
 if !exists('Tlist_Ctags_Cmd')
     let Tlist_Ctags_Cmd = 'ctags'
-endif
-
-" Key to open the tag listing window
-if !exists('Tlist_Key')
-    let Tlist_Key = '<F8>'
-endif
-
-" Key to highlight the current tag
-if !exists('Tlist_Sync_Key')
-    let Tlist_Sync_Key = '<F9>'
 endif
 
 " Tag listing sort type
@@ -223,7 +210,7 @@ endif
 
 " Vertically split tag listing window width setting
 if !exists('Tlist_WinWidth')
-    let Tlist_WinWidth = 20
+    let Tlist_WinWidth = 30
 endif
 
 " Auto refresh the tag display window
@@ -240,12 +227,6 @@ endif
 if !exists('Tlist_Display_Prototype')
     let Tlist_Display_Prototype = 0
 endif
-
-" Map the key to open the tag window and to highlight the current tag
-exe 'nnoremap <unique> <silent> ' . Tlist_Key . 
-            \ " :call <SID>Tlist_Toggle_Window(bufnr('%'))<CR>"
-exe 'nnoremap <unique> <silent> ' . Tlist_Sync_Key . 
-            \ " :call <SID>Tlist_Highlight_Tag(bufnr('%'), line('.'))<CR>"
 
 " File types supported by taglist
 let s:tlist_file_types = 'asm asp awk c cpp cobol eiffel fortran java lisp make pascal perl php python rexx ruby scheme sh slang tcl vim yacc'
@@ -280,7 +261,7 @@ let s:tlist_eiffel_tag_types = 'class feature'
 
 " fortran language
 let s:tlist_fortran_ctags_args = '--language-force=fortran --fortran-types=bcefiklmnpstv'
-let s:tlist_fortran_tag_types = 'block common entry function interface type label module namelist program subroutine derived module'
+let s:tlist_fortran_tag_types = 'block_data common entry function interface type label module namelist program subroutine derived module'
 
 " java language
 let s:tlist_java_ctags_args = '--language-force=java --java-types=pcifm'
@@ -315,8 +296,8 @@ let s:tlist_rexx_ctags_args = '--language-force=rexx --rexx-types=c'
 let s:tlist_rexx_tag_types = 'subroutine'
 
 " ruby language
-let s:tlist_ruby_ctags_args = '--language-force=ruby --ruby-types=cf'
-let s:tlist_ruby_tag_types = 'class function'
+let s:tlist_ruby_ctags_args = '--language-force=ruby --ruby-types=cfFm'
+let s:tlist_ruby_tag_types = 'mixin class method singleton_method'
 
 " scheme language
 let s:tlist_scheme_ctags_args = '--language-force=scheme --scheme-types=sf'
@@ -572,9 +553,8 @@ function! s:Tlist_Open_Window(bufnum)
 
         " Colors used to highlight the selected tag name
         highlight clear TagName
-        if has('gui_running') || &t_Co> 2
-            highlight TagName term=reverse cterm=bold
-            highlight TagName ctermfg=0 ctermbg=3 guifg=Black guibg=Yellow
+        if has('gui_running') || &t_Co > 2
+            highlight link TagName Search
         else
             highlight TagName term=reverse cterm=reverse
         endif
@@ -712,6 +692,16 @@ function! s:Tlist_Explore_File(bufnum)
             let start = strridx(one_line, '/;"' . "\t") + strlen('/;"' . "\t")
             let end = strridx(one_line, 'line:') - 1
             let ttype = strpart(one_line, start, end - start)
+
+            if ttype == ''
+                " Line is not in proper tags format. Remove the line
+                let cmd_output = strpart(cmd_output, 
+                                        \ stridx(cmd_output, "\n") + 1, len)
+                continue
+            endif
+
+            " Replace all space characters in the tag type with underscore (_)
+            let ttype = substitute(ttype, ' ', '_', 'g')
 
             " Extract the tag name
             if g:Tlist_Display_Prototype == 0
@@ -1369,6 +1359,8 @@ function! s:Tlist_Highlight_Tag(bufnum, curline)
     let start = strridx(tag_txt, '/;"' . "\t") + strlen('/;"' . "\t")
     let end = strridx(tag_txt, 'line:') - 1
     let ttype = strpart(tag_txt, start, end - start)
+    " Replace all space characters in the tag type with underscore (_)
+    let ttype = substitute(ttype, ' ', '_', 'g')
 
     " Extract the tag offset
     let offset = strpart(tag_txt, 0, stridx(tag_txt, ':')) + 0
@@ -1384,8 +1376,10 @@ function! s:Tlist_Highlight_Tag(bufnum, curline)
         silent! .foldopen
     endif
 
-    " Bring the line to the center of the window
-    normal! z.
+    " Call winline() to make sure the target line is visible in the taglist
+    " window. This is a side effect of calling winline(). Don't know of a
+    " better way to achieve this.
+    call winline()
 
     " Highlight the tag name
     if g:Tlist_Display_Prototype == 0
@@ -1416,4 +1410,4 @@ autocmd BufWinEnter *__Tag_List__ call <SID>Tlist_Init_Window()
 
 " Define the 'Tlist' user command to open/close taglist window
 command! -nargs=0 Tlist call s:Tlist_Toggle_Window(bufnr('%'))
-
+command! -nargs=0 TlistSync call s:Tlist_Highlight_Tag(bufnr('%'), line('.'))
