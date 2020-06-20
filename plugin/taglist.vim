@@ -3585,6 +3585,7 @@ endfunction
 
 " Tlist_Jump_Prev_Tag()
 " Jumps to the previous of the current tag.
+" Contributed by Mansour Alharthi
 function! s:Tlist_Jump_Prev_Tag()
     let l:fidx = s:Tlist_Get_File_Index(fnamemodify(bufname('%'), ':p'))
     " File was not supported probably, just jump to line#1
@@ -3629,6 +3630,7 @@ endfunction
 
 " Tlist_Jump_Next_Tag()
 " Jumps to the Next of the current tag.
+" Contributed by Mansour Alharthi
 function! s:Tlist_Jump_Next_Tag()
     let l:fidx = s:Tlist_Get_File_Index(fnamemodify(bufname('%'), ':p'))
     " File was not supported probably, just jump to bottom
@@ -3680,6 +3682,7 @@ endfunction
 " Tlist_Jump_Prev_Tag(). It is a lighter version of
 " Tlist_Window_Highlight_Tag() because we dont need to recalculate the tag
 " index. Instead it is passed as an argument.
+" Contributed by Mansour Alharthi
 function! s:Tlist_Jump_Highlight_Tag(fidx, tidx)
     " Dont highlight if the user dont want to
     if !g:Tlist_Auto_Highlight_Tag
