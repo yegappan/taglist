@@ -320,6 +320,9 @@ if !exists('loaded_taglist')
     exe 'autocmd FuncUndefined TagList_* source ' .
                 \ escape(expand('<sfile>'), ' ')
 
+    nnoremap <silent> <plug>(TlistJumpTagUp)    :<C-u>call <SID>Tlist_Jump_Prev_Tag()<CR>
+    nnoremap <silent> <plug>(TlistJumpTagDown)  :<C-u>call <SID>Tlist_Jump_Next_Tag()<CR>
+
     let loaded_taglist = 'fast_load_done'
 
     if g:Tlist_Show_Menu && has('gui_running')
@@ -3578,6 +3581,208 @@ function! s:Tlist_Find_Nearest_Tag_Idx(fidx, linenum)
     endif
 
     return left
+endfunction
+
+" Tlist_Jump_Prev_Tag()
+" Jumps to the previous of the current tag.
+function! s:Tlist_Jump_Prev_Tag()
+    let l:fidx = s:Tlist_Get_File_Index(fnamemodify(bufname('%'), ':p'))
+    " File was not supported probably, just jump to line#1
+    " No tags in the file, jump to line#1
+    if (l:fidx == -1 || s:tlist_{l:fidx}_tag_count == 0)
+        call cursor(1, 1)
+        return 
+    endif
+
+    let l:lnum = line(".")
+
+    " We are before the first tag, jump to line#1, remove hi
+    let l:tidx = s:Tlist_Find_Nearest_Tag_Idx(l:fidx, l:lnum)
+    if(l:tidx == -1)
+        call cursor(1, 1)
+        call s:Tlist_Jump_Highlight_Tag(fidx, -1)
+        return 
+    endif
+    
+    " Jump to top of current tag if below, update hi, dont middle screen
+    let l:clnum = s:Tlist_Get_Tag_Linenum(fidx, tidx)
+    if(l:clnum < l:lnum)
+        call cursor(l:clnum, 1)
+        call s:Tlist_Jump_Highlight_Tag(fidx, tidx)
+        return
+    endif
+
+    " No tag before, jump to line#1, remove hi
+    let l:ptidx = l:tidx - 1 
+    if(l:ptidx < 1)
+        call cursor(1, 1)
+        call s:Tlist_Jump_Highlight_Tag(fidx, -1)
+        return
+    endif
+
+    " There is a tag before, go there!, update hi, middle screen
+    let l:plnum = s:Tlist_Get_Tag_Linenum(fidx, ptidx)
+    call cursor(l:plnum, 1)
+    call s:Tlist_Jump_Highlight_Tag(fidx, ptidx)
+    normal! z.
+endfunction
+
+" Tlist_Jump_Next_Tag()
+" Jumps to the Next of the current tag.
+function! s:Tlist_Jump_Next_Tag()
+    let l:fidx = s:Tlist_Get_File_Index(fnamemodify(bufname('%'), ':p'))
+    " File was not supported probably, just jump to bottom
+    " No tags in the file, jump to bottom
+    if (l:fidx == -1 || s:tlist_{l:fidx}_tag_count == 0)
+        let l:llnum = line("$")
+        call cursor(l:llnum, 1)
+        return 
+    endif
+    
+    " We are before the first tag, jump to the 
+    " first tag, update hi, middle screen
+    let l:lnum = line(".")
+    let l:flnum = s:Tlist_Get_Tag_Linenum(fidx, 1)
+    if(l:flnum > l:lnum)
+        call cursor(l:flnum, 1)
+        call s:Tlist_Jump_Highlight_Tag(fidx, 1)
+        normal! z.
+        return
+    endif
+
+    " I suppose this would never equal -1; we are after the
+    " first tag so first tag will be returned at least, but
+    " here is check for that
+    let l:tidx = s:Tlist_Find_Nearest_Tag_Idx(l:fidx, l:lnum)
+    if(l:tidx == -1)
+        call s:Tlist_Jump_Highlight_Tag(fidx, -1)
+        return 
+    endif
+    
+    " No tag after, jump to bottom, update hi, dont middle scrren
+    let l:ntidx = l:tidx + 1 
+    if(l:ntidx > s:tlist_{l:fidx}_tag_count)
+      let l:llnum = line("$")
+      call cursor(l:llnum, 1)
+      call s:Tlist_Jump_Highlight_Tag(fidx, l:tidx)
+      return
+    endif
+    
+    " Jump to next tag, update hi, middle screen
+    let l:nlnum = s:Tlist_Get_Tag_Linenum(fidx, ntidx)
+    call s:Tlist_Jump_Highlight_Tag(fidx, l:ntidx)
+    call cursor(l:nlnum, 1)
+    normal! z.
+endfunction
+
+" Tlist_Jump_Highlight_Tag()
+" Update the highlighted tag, called from Tlist_Jump_Next_Tag() &
+" Tlist_Jump_Prev_Tag(). It is a lighter version of
+" Tlist_Window_Highlight_Tag() because we dont need to recalculate the tag
+" index. Instead it is passed as an argument.
+function! s:Tlist_Jump_Highlight_Tag(fidx, tidx)
+    " Dont highlight if the user dont want to
+    if !g:Tlist_Auto_Highlight_Tag
+        return
+    endif   
+    
+    " Make sure the taglist window is present
+    let winnum = bufwinnr(g:TagList_title)
+    if winnum == -1
+        call s:Tlist_Warning_Msg('Error: Taglist window is not open')
+        return
+    endif
+
+    " If the file is currently not displayed in the taglist window, then retrn
+    if !s:tlist_{a:fidx}_visible
+        return
+    endif
+
+    " If there are no tags for this file, then no need to proceed further
+    if s:tlist_{a:fidx}_tag_count == 0
+        return
+    endif
+
+    " Ignore all autocommands
+    let old_ei = &eventignore
+    set eventignore=all
+
+    " Save the original window number
+    let org_winnr = winnr()
+
+    if org_winnr == winnum
+        let in_taglist_window = 1
+    else
+        let in_taglist_window = 0
+    endif
+
+    " Go to the taglist window
+    if !in_taglist_window
+        exe winnum . 'wincmd w'
+    endif
+
+    " Clear previously selected name
+    match none
+
+    if a:tidx == -1
+        " Make sure the current tag line is visible in the taglist window.
+        " Calling the winline() function makes the line visible.  Don't know
+        " of a better way to achieve this.
+        let lnum = line('.')
+
+        if lnum < s:tlist_{a:fidx}_start || lnum > s:tlist_{a:fidx}_end
+            " Move the cursor to the beginning of the file
+            exe s:tlist_{a:fidx}_start
+        endif
+
+        if foldclosed('.') != -1
+            .foldopen
+        endif
+
+        call winline()
+
+        if !in_taglist_window
+            exe org_winnr . 'wincmd w'
+        endif
+
+        " Restore the autocommands
+        let &eventignore = old_ei
+        return
+    endif
+
+    " Extract the tag type
+    let ttype = s:Tlist_Get_Tag_Type_By_Tag(a:fidx, a:tidx)
+
+    " Compute the line number
+    " Start of file + Start of tag type + offset
+    let lnum = s:tlist_{a:fidx}_start + s:tlist_{a:fidx}_{ttype}_offset +
+                \ s:tlist_{a:fidx}_{a:tidx}_ttype_idx
+
+    " Goto the line containing the tag
+    exe lnum
+
+    " Open the fold
+    if foldclosed('.') != -1
+        .foldopen
+    endif
+
+
+    " Make sure the current tag line is visible in the taglist window.
+    " Calling the winline() function makes the line visible.  Don't know
+    " of a better way to achieve this.
+    call winline()
+
+    " Highlight the tag name
+    call s:Tlist_Window_Highlight_Line()
+
+    " Go back to the original window
+    if !in_taglist_window
+        exe org_winnr . 'wincmd w'
+    endif
+
+    " Restore the autocommands
+    let &eventignore = old_ei
+    return
 endfunction
 
 " Tlist_Window_Highlight_Tag()
