@@ -373,15 +373,15 @@ let loaded_taglist = 'available'
 let s:tlist_def_ant_settings = 'ant;p:projects;t:targets'
 
 " assembly language
-let s:tlist_def_asm_settings = 'asm;d:define;l:label;m:macro;t:type'
+let s:tlist_def_asm_settings = 'asm;s:section;d:define;l:label;m:macro;t:type'
 
 " aspperl language
 let s:tlist_def_aspperl_settings =
-            \ 'asp;c:constants;v:variable;f:function;s:subroutine'
+            \ 'asp;c:class;d:constant;v:variable;f:function;s:subroutine'
 
 " aspvbs language
 let s:tlist_def_aspvbs_settings =
-            \ 'asp;c:constants;v:variable;f:function;s:subroutine'
+            \ 'asp;c:class;d:constant;v:variable;f:function;s:subroutine'
 
 " awk language
 let s:tlist_def_awk_settings = 'awk;f:function'
@@ -436,10 +436,10 @@ let s:tlist_def_fortran_settings = 'fortran;p:program;b:block data;' .
                     \ 'n:namelist;t:derived;v:variable;f:function;s:subroutine'
 
 " GO language
-let s:tlist_def_go_settings = 'go;f:function;p:package;t:struct'
+let s:tlist_def_go_settings = 'go;p:package;s:struct;i:interface;f:function'
 
 " HTML language
-let s:tlist_def_html_settings = 'html;a:anchor;f:function'
+let s:tlist_def_html_settings = 'html;a:anchor;c:class;C:stylesheet;J:script'
 
 " java language
 let s:tlist_def_java_settings = 'java;p:package;c:class;i:interface;' .
@@ -456,10 +456,10 @@ let s:tlist_def_lisp_settings = 'lisp;f:function'
 let s:tlist_def_lua_settings = 'lua;f:function'
 
 " makefiles
-let s:tlist_def_make_settings = 'make;m:macro'
+let s:tlist_def_make_settings = 'make;m:macro;t:target;I:makefiles'
 
 " Matlab
-let s:tlist_def_matlab_settings = 'matlab;f:function'
+let s:tlist_def_matlab_settings = 'matlab;c:class;f:function;v:variable'
 
 " Ocamal
 let s:tlist_def_ocamal_settings = 'ocamal;M:module;v:global;t:type;'.
@@ -473,10 +473,10 @@ let s:tlist_def_perl_settings = 'perl;c:constant;l:label;p:package;s:subroutine'
 
 " php language
 let s:tlist_def_php_settings =
-            \ 'php;c:class;i:interface;d:constant;v:variable;f:function'
+            \ 'php;n:namespace;c:class;i:interface;d:constant;v:variable;f:function'
 
 " python language
-let s:tlist_def_python_settings = 'python;c:class;m:member;f:function'
+let s:tlist_def_python_settings = 'python;v:variable;c:class;m:member;f:function'
 
 " cython language
 let tlist_pyrex_settings='python;c:classe;m:memder;f:function'
@@ -486,19 +486,19 @@ let s:tlist_def_rexx_settings = 'rexx;s:subroutine'
 
 " ruby language
 let s:tlist_def_ruby_settings = 'ruby;c:class;f:method;F:function;' .
-                              \ 'm:singleton method'
+                              \ 'm:modules;S:singleton methods'
 
 " scheme language
 let s:tlist_def_scheme_settings = 'scheme;s:set;f:function'
 
 " shell language
-let s:tlist_def_sh_settings = 'sh;f:function'
+let s:tlist_def_sh_settings = 'sh;a:alias;f:function'
 
 " C shell language
-let s:tlist_def_csh_settings = 'sh;f:function'
+let s:tlist_def_csh_settings = 'sh;a:alias;f:function'
 
 " Z shell language
-let s:tlist_def_zsh_settings = 'sh;f:function'
+let s:tlist_def_zsh_settings = 'sh;a:alias;f:function'
 
 " slang language
 let s:tlist_def_slang_settings = 'slang;n:namespace;f:function'
@@ -515,7 +515,7 @@ let s:tlist_def_sql_settings = 'sql;f:functions;' .
            \ 'i:indexes;c:cursors;V:views;'.
            \ 'd:prototypes;'.
            \ 'l:local variables;'.
-           \ 'F:record fields;'.
+           \ 'E:record fields;'.
            \ 'L:block label;'.
            \ 'r:records;'.
            \ 's:subtypes'
@@ -546,6 +546,28 @@ let s:tlist_def_vim_settings =
 
 " yacc language
 let s:tlist_def_yacc_settings = 'yacc;l:label'
+
+" CMake
+let s:tlist_def_cmake_settings = 'cmake;m:macros;f:function;t:target;v:variable;' .
+                                \ 'D:option'
+
+" Markdown
+let s:tlist_def_markdown_settings = 'markdown;c:chapters;s:sections;S:subsections;t:subsubsections'
+
+" Rust
+let s:tlist_def_rust_settings = 'rust;n:module;M:macro;g:enum;s:struct;i:trait;c:implementation;' .
+                                \ 'P:method;f:function'
+
+" CSS
+let s:tlist_def_css_settings = 'css;c:class;f:function;v:variable;i:identity'
+
+" KConfig
+let s:tlist_def_kconfig_settings = 'kconfig;c:config;m:menu;k:kconfig file;C:choice'
+
+" TypeScript
+let s:tlist_def_typescript_settings = 'typescript;n:namespace;c:class;i:interface;g:enum;' .
+                                    \ 'v:variable;p:property;f:function'
+
 
 "------------------- end of language specific options --------------------
 
