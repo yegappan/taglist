@@ -358,7 +358,7 @@ let loaded_taglist = 'available'
 "
 " Variable name format:
 "
-"       s:tlist_def_{vim_ftype}_settings
+"       s:tlist_lang_def[vim_ftype]
 " 
 " vim_ftype - Filetype detected by Vim
 "
@@ -372,146 +372,148 @@ let loaded_taglist = 'available'
 "               tags of this type
 "
 
+let s:tlist_lang_def = {}
+
 " Ant language
-let s:tlist_def_ant_settings = 'ant;p:projects;t:targets'
+let s:tlist_lang_def["ant"] = 'ant;p:projects;t:targets'
 
 " assembly language
-let s:tlist_def_asm_settings = 'asm;s:section;d:define;l:label;m:macro;t:type'
+let s:tlist_lang_def["asm"] = 'asm;s:section;d:define;l:label;m:macro;t:type'
 
 " aspperl language
-let s:tlist_def_aspperl_settings =
+let s:tlist_lang_def["aspperl"] =
             \ 'asp;c:class;d:constant;v:variable;f:function;s:subroutine'
 
 " aspvbs language
-let s:tlist_def_aspvbs_settings =
+let s:tlist_lang_def["aspvbs"] =
             \ 'asp;c:class;d:constant;v:variable;f:function;s:subroutine'
 
 " awk language
-let s:tlist_def_awk_settings = 'awk;f:function'
+let s:tlist_lang_def["awk"] = 'awk;f:function'
 
 " basic language
-let s:tlist_def_basic_settings =
+let s:tlist_lang_def["basic"] =
             \ 'basic;c:constant;l:label;g:enum;v:variable;' .
             \ 't:type;f:function'
 
 " beta language
-let s:tlist_def_beta_settings = 'beta;f:fragment;s:slot;v:pattern'
+let s:tlist_lang_def["beta"] = 'beta;f:fragment;s:slot;v:pattern'
 
 " c language
-let s:tlist_def_c_settings = 'c;d:macro;g:enum;s:struct;u:union;t:typedef;' .
+let s:tlist_lang_def["c"] = 'c;d:macro;g:enum;s:struct;u:union;t:typedef;' .
                            \ 'v:variable;f:function'
 
 " c++ language
-let s:tlist_def_cpp_settings = 'c++;n:namespace;v:variable;d:macro;t:typedef;' .
+let s:tlist_lang_def["cpp"] = 'c++;n:namespace;v:variable;d:macro;t:typedef;' .
                              \ 'c:class;g:enum;s:struct;u:union;f:function'
 
 " c# language
-let s:tlist_def_cs_settings = 'c#;d:macro;t:typedef;n:namespace;c:class;' .
+let s:tlist_lang_def["cs"] = 'c#;d:macro;t:typedef;n:namespace;c:class;' .
                              \ 'E:event;g:enum;s:struct;i:interface;' .
                              \ 'p:properties;m:method'
 
 " cobol language
-let s:tlist_def_cobol_settings = 'cobol;d:data;f:file;g:group;p:paragraph;' .
+let s:tlist_lang_def["cobol"] = 'cobol;d:data;f:file;g:group;p:paragraph;' .
                                \ 'P:program;s:section'
 " D programming language
-let s:tlist_def_d_settings = 'c++;n:namespace;v:variable;t:typedef;' .
+let s:tlist_lang_def["d"] = 'c++;n:namespace;v:variable;t:typedef;' .
                         \'c:class;g:enum;s:struct;u:union;f:function'
 
 " Dosbatch
-let s:tlist_def_dosbatch_settings = 'dosbatch;l:labels;v:variables'
+let s:tlist_lang_def["dosbatch"] = 'dosbatch;l:labels;v:variables'
 
 " eiffel language
-let s:tlist_def_eiffel_settings = 'eiffel;c:class;f:feature'
+let s:tlist_lang_def["eiffel"] = 'eiffel;c:class;f:feature'
 
 " erlang language
-let s:tlist_def_erlang_settings = 'erlang;d:macro;r:record;m:module;f:function'
+let s:tlist_lang_def["erlang"] = 'erlang;d:macro;r:record;m:module;f:function'
 
 " expect (same as tcl) language
-let s:tlist_def_expect_settings = 'tcl;c:class;f:method;p:procedure'
+let s:tlist_lang_def["expect"] = 'tcl;c:class;f:method;p:procedure'
 
 " flex
-let s:tlist_def_flex_settings = 'flex;v:global;c:classes;p:properties;'.
+let s:tlist_lang_def["flex"] = 'flex;v:global;c:classes;p:properties;'.
             \ 'm:methods;f:functions;x:mxtags'
 
 " fortran language
-let s:tlist_def_fortran_settings = 'fortran;p:program;b:block data;' .
+let s:tlist_lang_def["fortran"] = 'fortran;p:program;b:block data;' .
                     \ 'c:common;e:entry;i:interface;k:type;l:label;m:module;' .
                     \ 'n:namelist;t:derived;v:variable;f:function;s:subroutine'
 
 " GO language
-let s:tlist_def_go_settings = 'go;p:package;s:struct;i:interface;f:function'
+let s:tlist_lang_def["go"] = 'go;p:package;s:struct;i:interface;f:function'
 
 " HTML language
-let s:tlist_def_html_settings = 'html;a:anchor;c:class;C:stylesheet;J:script'
+let s:tlist_lang_def["html"] = 'html;a:anchor;c:class;C:stylesheet;J:script'
 
 " java language
-let s:tlist_def_java_settings = 'java;p:package;c:class;i:interface;' .
+let s:tlist_lang_def["java"] = 'java;p:package;c:class;i:interface;' .
                               \ 'g:enum;f:field;m:method'
 
 " javascript language
-let s:tlist_def_javascript_settings =
+let s:tlist_lang_def["javascript"] =
             \ 'javascript;c:class;m:method;v:global;f:function;p:properties'
 
 " lisp language
-let s:tlist_def_lisp_settings = 'lisp;f:function'
+let s:tlist_lang_def["lisp"] = 'lisp;f:function'
 
 " lua language
-let s:tlist_def_lua_settings = 'lua;f:function'
+let s:tlist_lang_def["lua"] = 'lua;f:function'
 
 " makefiles
-let s:tlist_def_make_settings = 'make;m:macro;t:target;I:makefiles'
+let s:tlist_lang_def["make"] = 'make;m:macro;t:target;I:makefiles'
 
 " Matlab
-let s:tlist_def_matlab_settings = 'matlab;c:class;f:function;v:variable'
+let s:tlist_lang_def["matlab"] = 'matlab;c:class;f:function;v:variable'
 
 " Ocamal
-let s:tlist_def_ocamal_settings = 'ocamal;M:module;v:global;t:type;'.
+let s:tlist_lang_def["ocamal"] = 'ocamal;M:module;v:global;t:type;'.
             \ 'c:class;f:function;m:method;C:constructor;e:exception'
 
 " pascal language
-let s:tlist_def_pascal_settings = 'pascal;f:function;p:procedure'
+let s:tlist_lang_def["pascal"] = 'pascal;f:function;p:procedure'
 
 " perl language
-let s:tlist_def_perl_settings = 'perl;c:constant;l:label;p:package;s:subroutine'
+let s:tlist_lang_def["perl"] = 'perl;c:constant;l:label;p:package;s:subroutine'
 
 " php language
-let s:tlist_def_php_settings =
+let s:tlist_lang_def["php"] =
             \ 'php;n:namespace;c:class;i:interface;d:constant;v:variable;f:function'
 
 " python language
-let s:tlist_def_python_settings = 'python;v:variable;c:class;m:member;f:function'
+let s:tlist_lang_def["python"] = 'python;v:variable;c:class;m:member;f:function'
 
 " cython language
 let tlist_pyrex_settings='python;c:classe;m:memder;f:function'
 
 " rexx language
-let s:tlist_def_rexx_settings = 'rexx;s:subroutine'
+let s:tlist_lang_def["rexx"] = 'rexx;s:subroutine'
 
 " ruby language
-let s:tlist_def_ruby_settings = 'ruby;c:class;f:method;F:function;' .
+let s:tlist_lang_def["ruby"] = 'ruby;c:class;f:method;F:function;' .
                               \ 'm:modules;S:singleton methods'
 
 " scheme language
-let s:tlist_def_scheme_settings = 'scheme;s:set;f:function'
+let s:tlist_lang_def["scheme"] = 'scheme;s:set;f:function'
 
 " shell language
-let s:tlist_def_sh_settings = 'sh;a:alias;f:function'
+let s:tlist_lang_def["sh"] = 'sh;a:alias;f:function'
 
 " C shell language
-let s:tlist_def_csh_settings = 'sh;a:alias;f:function'
+let s:tlist_lang_def["csh"] = 'sh;a:alias;f:function'
 
 " Z shell language
-let s:tlist_def_zsh_settings = 'sh;a:alias;f:function'
+let s:tlist_lang_def["zsh"] = 'sh;a:alias;f:function'
 
 " slang language
-let s:tlist_def_slang_settings = 'slang;n:namespace;f:function'
+let s:tlist_lang_def["slang"] = 'slang;n:namespace;f:function'
 
 " sml language
-let s:tlist_def_sml_settings = 'sml;e:exception;c:functor;s:signature;' .
+let s:tlist_lang_def["sml"] = 'sml;e:exception;c:functor;s:signature;' .
             \ 'r:structure;t:type;v:value;c:functor;f:function'
 
 " sql language
-let s:tlist_def_sql_settings = 'sql;f:functions;' .
+let s:tlist_lang_def["sql"] = 'sql;f:functions;' .
            \ 'P:packages;p:procedures;t:tables;T:triggers;' .
            \ 'v:variables;e:events;U:publications;R:services;' .
            \ 'D:domains;x:MLTableScripts;y:MLConnScripts;z:MLProperties;'.
@@ -524,51 +526,51 @@ let s:tlist_def_sql_settings = 'sql;f:functions;' .
            \ 's:subtypes'
 
 " tcl language
-let s:tlist_def_tcl_settings = 'tcl;c:class;f:method;m:method;p:procedure'
+let s:tlist_lang_def["tcl"] = 'tcl;c:class;f:method;m:method;p:procedure'
 
 " Tex
-let s:tlist_def_tex_settings = 'tex;c:chapters;s:sections;u:subsections;'.
+let s:tlist_lang_def["tex"] = 'tex;c:chapters;s:sections;u:subsections;'.
             \ 'b:subsubsections;p:parts;P:paragraphs;G:subparagraphs'
 
 " vera language
-let s:tlist_def_vera_settings = 'vera;c:class;d:macro;e:enumerator;' .
+let s:tlist_lang_def["vera"] = 'vera;c:class;d:macro;e:enumerator;' .
                                 \ 'f:function;g:enum;m:member;p:program;' .
                                 \ 'P:prototype;t:task;T:typedef;v:variable;' .
                                 \ 'x:externvar'
 
 "verilog language
-let s:tlist_def_verilog_settings = 'verilog;m:module;c:constant;P:parameter;' .
+let s:tlist_lang_def["verilog"] = 'verilog;m:module;c:constant;P:parameter;' .
             \ 'e:event;r:register;t:task;w:write;p:port;v:variable;f:function'
 
 " VHDL
-let s:tlist_def_vhdl_settings = 'vhdl;c:constant;t:type;T:subtype;r:record;e:entity;f:function;p:procedure;P:package'
+let s:tlist_lang_def["vhdl"] = 'vhdl;c:constant;t:type;T:subtype;r:record;e:entity;f:function;p:procedure;P:package'
 
 " vim language
-let s:tlist_def_vim_settings =
+let s:tlist_lang_def["vim"] =
             \ 'vim;v:variable;a:autocmds;c:commands;m:map;f:function'
 
 " yacc language
-let s:tlist_def_yacc_settings = 'yacc;l:label'
+let s:tlist_lang_def["yacc"] = 'yacc;l:label'
 
 " CMake
-let s:tlist_def_cmake_settings = 'cmake;m:macros;f:function;t:target;v:variable;' .
+let s:tlist_lang_def["cmake"] = 'cmake;m:macros;f:function;t:target;v:variable;' .
                                 \ 'D:option'
 
 " Markdown
-let s:tlist_def_markdown_settings = 'markdown;c:chapters;s:sections;S:subsections;t:subsubsections'
+let s:tlist_lang_def["markdown"] = 'markdown;c:chapters;s:sections;S:subsections;t:subsubsections'
 
 " Rust
-let s:tlist_def_rust_settings = 'rust;n:module;M:macro;g:enum;s:struct;i:trait;c:implementation;' .
+let s:tlist_lang_def["rust"] = 'rust;n:module;M:macro;g:enum;s:struct;i:trait;c:implementation;' .
                                 \ 'P:method;f:function'
 
 " CSS
-let s:tlist_def_css_settings = 'css;c:class;f:function;v:variable;i:identity'
+let s:tlist_lang_def["css"] = 'css;c:class;f:function;v:variable;i:identity'
 
 " KConfig
-let s:tlist_def_kconfig_settings = 'kconfig;c:config;m:menu;k:kconfig file;C:choice'
+let s:tlist_lang_def["kconfig"] = 'kconfig;c:config;m:menu;k:kconfig file;C:choice'
 
 " TypeScript
-let s:tlist_def_typescript_settings = 'typescript;n:namespace;c:class;i:interface;g:enum;' .
+let s:tlist_lang_def["typescript"] = 'typescript;n:namespace;c:class;i:interface;g:enum;' .
                                     \ 'v:variable;p:property;f:function'
 
 
@@ -894,8 +896,7 @@ function! s:Tlist_Skip_File(filename, ftype)
     " If it is not available, then check whether user specified settings are
     " available. If both are not available, then don't list the tags for this
     " filetype
-    let var = 's:tlist_def_' . a:ftype . '_settings'
-    if !exists(var)
+    if !has_key(s:tlist_lang_def, a:ftype)
         let var = 'g:tlist_' . a:ftype . '_settings'
         if !exists(var)
             return 1
@@ -948,13 +949,12 @@ function! s:Tlist_FileType_Init(ftype)
         let settings = {var} . ';'
     else
         " Default ctags arguments
-        let var = 's:tlist_def_' . a:ftype . '_settings'
-        if !exists(var)
+        if !has_key(s:tlist_lang_def, a:ftype)
             " No default settings for this file type. This filetype is
             " not supported
             return 0
         endif
-        let settings = s:tlist_def_{a:ftype}_settings . ';'
+        let settings = s:tlist_lang_def[a:ftype] . ';'
     endif
 
     let msg = 'Taglist: Invalid ctags option setting - ' . settings
@@ -2331,7 +2331,6 @@ function! s:Tlist_Process_File(filename, ftype)
 
     " If the tag types for this filetype are not yet created, then create
     " them now
-    let var = 's:tlist_' . a:ftype . '_count'
     if !has_key(s:tlist_tag_type_count, a:ftype)
         if s:Tlist_FileType_Init(a:ftype) == 0
             return -1
