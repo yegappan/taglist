@@ -596,6 +596,10 @@ let s:tlist_cur_file_idx = -1
 let s:tlist_menu_empty = 1
 " tag type count per fileype
 let s:tlist_tag_type_count = {}
+" ctags args per fileype
+let s:tlist_ctags_args = {}
+" ctags flags per fileype
+let s:tlist_ctags_flags = {}
 
 " An autocommand is used to refresh the taglist window when entering any
 " buffer. We don't want to refresh the taglist window if we are entering the
@@ -1026,10 +1030,10 @@ function! s:Tlist_FileType_Init(ftype)
         let ctags_flags = ctags_flags . flag
     endwhile
 
-    let s:tlist_{a:ftype}_ctags_args = '--language-force=' . ctags_ftype .
+    let s:tlist_ctags_args[a:ftype] = '--language-force=' . ctags_ftype .
                             \ ' --' . ctags_ftype . '-types=' . ctags_flags
     let s:tlist_tag_type_count[a:ftype] = cnt
-    let s:tlist_{a:ftype}_ctags_flags = ctags_flags
+    let s:tlist_ctags_flags[a:ftype] = ctags_flags
 
     " Save the filetype name
     let s:tlist_ftype_{s:tlist_ftype_count}_name = a:ftype
@@ -2357,7 +2361,7 @@ function! s:Tlist_Process_File(filename, ftype)
     endif
 
     " Add the filetype specific arguments
-    let ctags_args = ctags_args . ' ' . s:tlist_{a:ftype}_ctags_args
+    let ctags_args = ctags_args . ' ' . s:tlist_ctags_args[a:ftype]
 
     " Ctags command to produce output with regexp for locating the tags
     let ctags_cmd = g:Tlist_Ctags_Cmd . ctags_args
@@ -2440,7 +2444,7 @@ function! s:Tlist_Process_File(filename, ftype)
     if v:version > 601
         " The following script local variables are used by the
         " Tlist_Parse_Tagline() function.
-        let s:ctags_flags = s:tlist_{a:ftype}_ctags_flags
+        let s:ctags_flags = s:tlist_ctags_flags[a:ftype]
         let s:fidx = fidx
         let s:tidx = 0
 
@@ -2461,7 +2465,7 @@ function! s:Tlist_Process_File(filename, ftype)
         " Due to a bug in Vim earlier than version 6.1,
         " we cannot use substitute() to parse the ctags output.
         " Instead the slow str*() functions are used
-        let ctags_flags = s:tlist_{a:ftype}_ctags_flags
+        let ctags_flags = s:tlist_ctags_flags[a:ftype]
         let tidx = 0
 
         while cmd_output != ''
