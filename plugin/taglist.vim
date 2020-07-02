@@ -594,7 +594,7 @@ let s:tlist_removed_flist = ""
 let s:tlist_cur_file_idx = -1
 " Taglist menu is empty or not
 let s:tlist_menu_empty = 1
-" Flags count per fileype
+" tag type count per fileype
 let s:tlist_tag_type_count = {}
 
 " An autocommand is used to refresh the taglist window when entering any
