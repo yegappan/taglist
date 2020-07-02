@@ -594,6 +594,8 @@ let s:tlist_removed_flist = ""
 let s:tlist_cur_file_idx = -1
 " Taglist menu is empty or not
 let s:tlist_menu_empty = 1
+" Flags count per fileype
+let s:tlist_tag_type_count = {}
 
 " An autocommand is used to refresh the taglist window when entering any
 " buffer. We don't want to refresh the taglist window if we are entering the
@@ -1026,7 +1028,7 @@ function! s:Tlist_FileType_Init(ftype)
 
     let s:tlist_{a:ftype}_ctags_args = '--language-force=' . ctags_ftype .
                             \ ' --' . ctags_ftype . '-types=' . ctags_flags
-    let s:tlist_{a:ftype}_count = cnt
+    let s:tlist_tag_type_count[a:ftype] = cnt
     let s:tlist_{a:ftype}_ctags_flags = ctags_flags
 
     " Save the filetype name
@@ -1120,7 +1122,7 @@ function! s:Tlist_Discard_TagInfo(fidx)
 
     " Discard information about tag type groups
     let i = 1
-    while i <= s:tlist_{ftype}_count
+    while i <= s:tlist_tag_type_count[ftype]
         let ttype = s:tlist_{ftype}_{i}_name
         if s:tlist_{a:fidx}_{ttype} != ''
             let fidx_ttype = 's:tlist_' . a:fidx . '_' . ttype
@@ -1172,7 +1174,7 @@ function! s:Tlist_Discard_FileInfo(fidx)
     let ftype = s:tlist_{a:fidx}_filetype
 
     let i = 1
-    while i <= s:tlist_{ftype}_count
+    while i <= s:tlist_tag_type_count[ftype]
         let ttype = s:tlist_{ftype}_{i}_name
         unlet! s:tlist_{a:fidx}_{ttype}
         unlet! s:tlist_{a:fidx}_{ttype}_offset
@@ -1305,7 +1307,7 @@ function! s:Tlist_Remove_File(file_idx, user_request)
         let ftype = s:tlist_{i}_filetype
 
         let k = 1
-        while k <= s:tlist_{ftype}_count
+        while k <= s:tlist_tag_type_count[ftype]
             let ttype = s:tlist_{ftype}_{k}_name
             let s:tlist_{j}_{ttype} = s:tlist_{i}_{ttype}
             let s:tlist_{j}_{ttype}_offset = s:tlist_{i}_{ttype}_offset
@@ -2030,7 +2032,7 @@ function! s:Tlist_Window_Refresh_File(filename, ftype)
 
     " Add the tag names grouped by tag type to the buffer with a title
     let i = 1
-    let ttype_cnt = s:tlist_{a:ftype}_count
+    let ttype_cnt = s:tlist_tag_type_count[a:ftype]
     while i <= ttype_cnt
         let ttype = s:tlist_{a:ftype}_{i}_name
         " Add the tag type only if there are tags for that type
@@ -2131,7 +2133,7 @@ function! s:Tlist_Init_File(filename, ftype)
 
     " Initialize the tag type variables
     let i = 1
-    while i <= s:tlist_{a:ftype}_count
+    while i <= s:tlist_tag_type_count[a:ftype]
         let ttype = s:tlist_{a:ftype}_{i}_name
         let s:tlist_{fidx}_{ttype} = ''
         let s:tlist_{fidx}_{ttype}_offset = 0
@@ -2326,7 +2328,7 @@ function! s:Tlist_Process_File(filename, ftype)
     " If the tag types for this filetype are not yet created, then create
     " them now
     let var = 's:tlist_' . a:ftype . '_count'
-    if !exists(var)
+    if !has_key(s:tlist_tag_type_count, a:ftype)
         if s:Tlist_FileType_Init(a:ftype) == 0
             return -1
         endif
@@ -3157,7 +3159,7 @@ function! s:Tlist_Window_Get_Tag_Type_By_Linenum(fidx, lnum)
     " Determine to which tag type the current line number belongs to using the
     " tag type start line number and the number of tags in a tag type
     let i = 1
-    while i <= s:tlist_{ftype}_count
+    while i <= s:tlist_tag_type_count[ftype]
         let ttype = s:tlist_{ftype}_{i}_name
         let start_lnum =
                     \ s:tlist_{a:fidx}_start + s:tlist_{a:fidx}_{ttype}_offset
@@ -3169,7 +3171,7 @@ function! s:Tlist_Window_Get_Tag_Type_By_Linenum(fidx, lnum)
     endwhile
 
     " Current line doesn't belong to any of the displayed tag types
-    if i > s:tlist_{ftype}_count
+    if i > s:tlist_tag_type_count[ftype]
         return ''
     endif
 
@@ -3516,7 +3518,7 @@ function! s:Tlist_Window_Show_Info()
 
         let ftype = s:tlist_{fidx}_filetype
         let i = 1
-        while i <= s:tlist_{ftype}_count
+        while i <= s:tlist_tag_type_count[ftype]
             if ttype == s:tlist_{ftype}_{i}_name
                 let ttype_name = s:tlist_{ftype}_{i}_fullname
                 break
@@ -4151,7 +4153,7 @@ function! s:Tlist_Session_Load(...)
         let ftype = g:tlist_{i}_filetype
         unlet! g:tlist_{i}_filetype
 
-        if !exists('s:tlist_' . ftype . '_count')
+        if !has_key(s:tlist_tag_type_count, ftype)
             if s:Tlist_FileType_Init(ftype) == 0
                 let i = i + 1
                 continue
@@ -4203,7 +4205,7 @@ function! s:Tlist_Session_Load(...)
         endwhile
 
         let j = 1
-        while j <= s:tlist_{ftype}_count
+        while j <= s:tlist_tag_type_count[ftype]
             let ttype = s:tlist_{ftype}_{j}_name
 
             if exists('g:tlist_' . i . '_' . ttype)
@@ -4311,7 +4313,7 @@ function! s:Tlist_Session_Save(...)
         " Store information about all the tags grouped by their type
         let ftype = s:tlist_{i}_filetype
         let j = 1
-        while j <= s:tlist_{ftype}_count
+        while j <= s:tlist_tag_type_count[ftype]
             let ttype = s:tlist_{ftype}_{j}_name
             if s:tlist_{i}_{ttype}_count != 0
                 let txt = escape(s:tlist_{i}_{ttype}, '"\')
@@ -4448,7 +4450,7 @@ function! s:Tlist_Create_Folds_For_File(fidx)
 
     " Create the folds for each tag type in a file
     let j = 1
-    while j <= s:tlist_{ftype}_count
+    while j <= s:tlist_tag_type_count[ftype]
         let ttype = s:tlist_{ftype}_{j}_name
         if s:tlist_{a:fidx}_{ttype}_count
             let s = s:tlist_{a:fidx}_start + s:tlist_{a:fidx}_{ttype}_offset
@@ -4718,7 +4720,7 @@ function! s:Tlist_Menu_Update_File(clear_menu)
     " then the tag type name needs to be present
     let add_ttype_name = -1
     let i = 1
-    while i <= s:tlist_{ftype}_count && add_ttype_name < 1
+    while i <= s:tlist_tag_type_count[ftype] && add_ttype_name < 1
         let ttype = s:tlist_{ftype}_{i}_name
         if s:tlist_{fidx}_{ttype}_count
             let add_ttype_name = add_ttype_name + 1
@@ -4728,7 +4730,7 @@ function! s:Tlist_Menu_Update_File(clear_menu)
 
     " Process the tags by the tag type and get the menu command
     let i = 1
-    while i <= s:tlist_{ftype}_count
+    while i <= s:tlist_tag_type_count[ftype]
         let mcmd = s:Tlist_Menu_Get_Tag_Type_Cmd(fidx, ftype, add_ttype_name, i)
         if mcmd != ''
             let cmd = cmd . mcmd
