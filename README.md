@@ -4,16 +4,15 @@ taglist - Source Code Browser plugin for Vim
 The "Tag List" plugin is a source code browser plugin for Vim and 
 provides an overview of the structure of source code files and allows 
 you to efficiently browse through source code files for different 
-programming languages.  You can visit the taglist plugin home page for 
-more information: 
+programming languages.
 
-      http://vim-taglist.sourceforge.net 
+The github page for the taglist plugin is at:
 
-You can subscribe to the taglist mailing list to post your questions 
-or suggestions for improvement or to report bugs. Visit the following 
-page for subscribing to the mailing list: 
+	http://github.com/yegappan/taglist
 
-      http://groups.yahoo.com/group/taglist/ 
+You can visit the taglist plugin home page for more information:
 
-For more information about using this plugin, after installing the 
+      http://vim-taglist.sourceforge.net
+
+For more information about using this plugin, after installing the
 taglist plugin, use the ":help taglist" command.

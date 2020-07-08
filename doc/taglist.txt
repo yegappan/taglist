@@ -1,8 +1,8 @@
 *taglist.txt*	Plugin for browsing source code
 
 Author: Yegappan Lakshmanan  (yegappan AT yahoo DOT com)
-For Vim version 6.0 and above
-Last change: 2020 April 26
+For Vim version 7.0 and above
+Last change: 2020 July 7
 
 1. Overview 					|taglist-intro|
 2. Taglist on the internet			|taglist-internet|
@@ -53,24 +53,19 @@ programming languages. The "Tag List" plugin provides the following features:
       restored across Vim sessions.
     * Provides commands to get the name and prototype of the current tag.
     * Runs in both console/terminal and GUI versions of Vim.
-    * Works with the winmanager plugin. Using the winmanager plugin, you
-      can use Vim plugins like the file explorer, buffer explorer and the
-      taglist plugin at the same time like an IDE.
     * Can be used in both Unix and MS-Windows systems.
 
 ==============================================================================
 						*taglist-internet*
 2. Taglist on the internet~
 
+The github page for the taglist plugin is at:
+>
+	http://github.com/yegappan/taglist
+<
 The home page of the taglist plugin is at:
 >
 	http://vim-taglist.sourceforge.net/
-<
-You can subscribe to the taglist mailing list to post your questions or
-suggestions for improvement or to send bug reports. Visit the following page
-for subscribing to the mailing list:
->
-	http://groups.yahoo.com/group/taglist
 <
 ==============================================================================
 						*taglist-requirements*
@@ -78,12 +73,12 @@ for subscribing to the mailing list:
 
 The taglist plugin requires the following:
 
-    * Vim version 6.0 and above
+    * Vim version 7.0 and above
     * Universal Ctags or Exuberant Ctags
 
-The taglist plugin will work on all the platforms where the Universal or
-exuberant ctags utility and Vim are supported (this includes MS-Windows, MacOS
-and Unix based systems).
+The taglist plugin will work on all the platforms where the Universal ctags or
+the exuberant ctags utility and Vim are supported (this includes MS-Windows,
+MacOS and Linux/Unix based systems).
 
 The taglist plugin relies on the ctags utility to dynamically generate the tag
 listing.  The ctags utility must be installed in your system to use this
@@ -604,16 +599,6 @@ selecting the 'Tags->Sort menu by->Name/Order' menu entry.
 You can tear-off the Tags menu and keep it on the side of the Vim window
 for quickly locating the tags.
 
-Using the taglist plugin with the winmanager plugin~
-You can use the taglist plugin with the winmanager plugin. This will allow you
-to use the file explorer, buffer explorer and the taglist plugin at the same
-time in different windows. To use the taglist plugin with the winmanager
-plugin, set 'TagList' in the 'winManagerWindowLayout' variable. For example,
-to use the file explorer plugin and the taglist plugin at the same time, use
-the following setting: >
-
-	let winManagerWindowLayout = 'FileExplorer|TagList'
-<
 Getting help~
 If you have installed the taglist help file (this file), then you can use the
 Vim ":help taglist-<keyword>" command to get help on the various taglist
@@ -1194,21 +1179,6 @@ Tlist_Get_Tagname_By_Line([{filename}, {linenumber}])
 		are not specified, then the current buffer name and the
 		current line number are used.
 
-					    *Tlist_Set_App()*
-Tlist_Set_App({appname})
-		Set the name of the plugin that controls the taglist plugin
-		window and buffer. This can be used to integrate the taglist
-		plugin with other Vim plugins.
-		
-		For example, the winmanager plugin and the Cream package use
-		this function and specify the appname as "winmanager" and
-		"cream" respectively.
-		
-		By default, the taglist plugin is a stand-alone plugin and
-		controls the taglist window and buffer. If the taglist window
-		is controlled by an external plugin, then the appname should
-		be set appropriately.
-
 ==============================================================================
 						*taglist-extend*
 9. Extending~
@@ -1327,16 +1297,16 @@ are generated for the flags b, c and l respectively.
 
 Q. The taglist plugin doesn't work. The taglist window is empty and the tags
    defined in a file are not displayed. 
-A. Are you using Vim version 6.0 and above? The taglist plugin relies on the
-   features supported by Vim version 6.0 and above. You can use the following
+A. Are you using Vim version 7.0 and above? The taglist plugin relies on the
+   features supported by Vim version 7.0 and above. You can use the following
    command to get the Vim version:
 >
 	$ vim --version
 <
-   Are you using exuberant ctags version 5.0 and above? The taglist plugin
-   relies on the features supported by exuberant ctags and will not work with
-   GNU ctags or the Unix ctags utility. You can use the following command to
-   determine whether the ctags installed in your system is exuberant ctags:
+   Are you using Universal ctags or exuberant ctags? The taglist plugin relies
+   on the features supported by these tools and will not work with GNU ctags
+   or the Unix ctags utility. You can use the following command to determine
+   whether the ctags installed in your system is exuberant ctags:
 >
 	$ ctags --version
 <
