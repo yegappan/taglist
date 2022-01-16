@@ -8,11 +8,11 @@ programming languages.
 
 The github page for the taglist plugin is at:
 
-	http://github.com/yegappan/taglist
+    http://github.com/yegappan/taglist
 
 You can visit the taglist plugin home page for more information:
 
-      http://vim-taglist.sourceforge.net
+    http://vim-taglist.sourceforge.net
 
 For more information about using this plugin, after installing the
 taglist plugin, use the ":help taglist" command.
