@@ -3,11 +3,7 @@
 # Script to run the unit-tests for the taglist Vim plugin
 
 VIMPRG=${VIMPRG:=/usr/bin/vim}
-export VIMRUNTIME=/usr/share/vim/vim82
-#VIMPRG=/home/yega/bin/vim90/bin/vim
-#export VIMRUNTIME=/home/yega/bin/vim90/share/vim/vim90
-VIM_CMD="$VIMPRG -u NONE -U NONE -i NONE --noplugin -N --not-a-term"
-#VIM_CMD="$VIMPRG -g -f -u NONE -U NONE -i NONE --noplugin -N --not-a-term"
+VIM_CMD="$VIMPRG -N -u NONE -U NONE -i NONE --noplugin"
 
 $VIM_CMD -S unit_tests.vim
 
