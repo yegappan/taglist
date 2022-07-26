@@ -15,8 +15,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
-	with:
-	  path: '.vim/pack/myplugins/opt/taglist'
+        with:
+          path: '.vim/pack/myplugins/opt/taglist'
       - name: Setup Vim
         uses: rhysd/action-setup-vim@v1
         id: vim
@@ -35,8 +35,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
-	with:
-	  path: '.vim/pack/myplugins/opt/taglist'
+        with:
+          path: '.vim/pack/myplugins/opt/taglist'
       - name: Setup Neovim
         uses: rhysd/action-setup-vim@v1
         id: vim
