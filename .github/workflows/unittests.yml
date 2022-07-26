@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
+	with:
+	  path: '.vim/pack/myplugins/opt/taglist'
       - name: Setup Vim
         uses: rhysd/action-setup-vim@v1
         id: vim
@@ -25,7 +27,7 @@ jobs:
           uname -a
           export VIMPRG=${{ steps.vim.outputs.executable }}
           $VIMPRG --version
-          cd test
+          cd .vim/pack/myplugins/opt/taglist/test
           ./run_tests.sh
   neovim-linux:
     name: neovim-linux
@@ -33,6 +35,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
+	with:
+	  path: '.vim/pack/myplugins/opt/taglist'
       - name: Setup Neovim
         uses: rhysd/action-setup-vim@v1
         id: vim
@@ -44,5 +48,5 @@ jobs:
           uname -a
           export VIMPRG=${{ steps.vim.outputs.executable }}
           $VIMPRG --version
-          cd test
+          cd .vim/pack/myplugins/opt/taglist/test
           ./run_tests.sh

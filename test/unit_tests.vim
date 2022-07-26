@@ -3,6 +3,7 @@
 syntax on
 filetype on
 filetype plugin on
+set nohidden
 
 " Set the $TAGLIST_PROFILE environment variable to profile the taglist plugin
 let do_profile = v:false
@@ -16,7 +17,7 @@ if do_profile
   profile! file */taglist/*
 endif
 
-set packpath+=../..
+set packpath+=../../../../..
 let g:Tlist_Show_Menu=1
 packadd taglist
 
