@@ -1,8 +1,8 @@
 " File: taglist.vim
 " Author: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
 " Version: 5.0
-" Last Modified: July 7, 2020
-" Copyright: Copyright (C) 2002-2020 Yegappan Lakshmanan
+" Last Modified: July 25, 2022
+" Copyright: Copyright (C) 2002-2022 Yegappan Lakshmanan
 "            Permission is hereby granted to use and distribute this code,
 "            with or without modifications, provided that this copyright
 "            notice is copied with it. Like anything else that's free,
