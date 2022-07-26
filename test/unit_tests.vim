@@ -1071,11 +1071,11 @@ func Test_Tlist_Enable_Fold_Column()
   edit Xtest1.c
   let g:Tlist_Enable_Fold_Column=0
   Tlist
-  call assert_equal(0, getwinvar(1, '&foldcolumn'))
+  call assert_equal('0', getwinvar(1, '&foldcolumn'))
   TlistClose
   let g:Tlist_Enable_Fold_Column=1
   Tlist
-  call assert_equal(3, getwinvar(1, '&foldcolumn'))
+  call assert_equal('3', getwinvar(1, '&foldcolumn'))
   TlistClose
   %bw!
 endfunc
