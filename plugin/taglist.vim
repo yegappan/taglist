@@ -155,8 +155,8 @@ command! -nargs=* -complete=file TlistSessionLoad
       \ call taglist#Tlist_Session_Load(<q-args>)
 command! -nargs=* -complete=file TlistSessionSave
       \ call taglist#Tlist_Session_Save(<q-args>)
-command! -bar TlistLock let Tlist_Auto_Update=0
-command! -bar TlistUnlock let Tlist_Auto_Update=1
+command! -bar TlistLock let g:Tlist_Auto_Update=0
+command! -bar TlistUnlock let g:Tlist_Auto_Update=1
 
 " Commands for enabling/disabling debug and to display debug messages
 command! -nargs=? -complete=file -bar TlistDebug

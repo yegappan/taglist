@@ -2343,10 +2343,19 @@ function! taglist#Tlist_Window_Open()
   " is selected.
   call s:Tlist_Window_Mark_File_Window()
 
+  let tlist_win_refresh = v:true
+  if len(win_findbuf(bufnr(g:TagList_title))) > 0
+    let tlist_win_refresh = v:false
+  endif
+
   " Open the taglist window
   call s:Tlist_Window_Create()
 
-  call s:Tlist_Window_Refresh()
+  if tlist_win_refresh
+    " If the taglist buffer is already present in a taglist window, then don't
+    " refresh it again (as it will change the contents of the other window)
+    call s:Tlist_Window_Refresh()
+  endif
 
   if g:Tlist_Show_One_File
     " Add only the current buffer and file
@@ -2448,7 +2457,7 @@ endfunction
 " Tlist_Process_Dir
 " Process the files in a directory matching the specified pattern
 function! s:Tlist_Process_Dir(dir_name, pat)
-  let flist = glob(a:dir_name . '/' . a:pat) . "\n"
+  let flist = glob(a:dir_name . a:pat) . "\n"
 
   let fcnt = s:Tlist_Process_Filelist(flist)
 
@@ -2476,7 +2485,7 @@ function! s:Tlist_Process_Dir(dir_name, pat)
 
     echon "\r                                                              "
     echon "\rProcessing files in directory " . fnamemodify(one_file, ':t')
-    let fcnt = fcnt + s:Tlist_Process_Dir(one_file, a:pat)
+    let fcnt = fcnt + s:Tlist_Process_Dir(one_file . '/', a:pat)
   endwhile
 
   return fcnt
@@ -3238,7 +3247,7 @@ endfunction
 " Tlist_Jump_Prev_Tag()
 " Jumps to the previous of the current tag.
 " Contributed by Mansour Alharthi
-function! s:Tlist_Jump_Prev_Tag()
+function! taglist#Tlist_Jump_Prev_Tag()
   let l:fidx = s:Tlist_Get_File_Index(fnamemodify(bufname('%'), ':p'))
   " File was not supported probably, just jump to line#1
   " No tags in the file, jump to line#1
@@ -3283,7 +3292,7 @@ endfunction
 " Tlist_Jump_Next_Tag()
 " Jumps to the Next of the current tag.
 " Contributed by Mansour Alharthi
-function! s:Tlist_Jump_Next_Tag()
+function! taglist#Tlist_Jump_Next_Tag()
   let l:fidx = s:Tlist_Get_File_Index(fnamemodify(bufname('%'), ':p'))
   " File was not supported probably, just jump to bottom
   " No tags in the file, jump to bottom
@@ -3679,12 +3688,12 @@ endfunction
 " Return the list of file names in the taglist. The names are separated
 " by a newline ('\n')
 function! Tlist_Get_Filenames()
-  let fnames = ''
+  let fnames = []
 
   let i = 0
 
   while i < s:tlist_file_count
-    let fnames = fnames . s:tlist_file_info[i]["filename"] . "\n"
+    call add(fnames, s:tlist_file_info[i]["filename"])
     let i = i + 1
   endwhile
 
