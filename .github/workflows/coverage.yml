@@ -32,10 +32,11 @@ jobs:
         run: |
           cd .vim/pack/myplugins/opt/taglist/test
           covimerage write_coverage taglist_profile.txt
-          ls -l
+          ls -al
       - name: Take coverage
         run: |
           cd .vim/pack/myplugins/opt/taglist/test
+          ls -al
           coverage report
           coverage xml
       - name: Upload coverage to codecov
