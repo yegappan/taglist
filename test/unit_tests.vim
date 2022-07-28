@@ -179,7 +179,7 @@ func Test_tlist_window_show_info()
   redir => info
   call feedkeys("\<Space>", 'xt')
   redir END
-  call assert_equal(['Xtest1.c, Filetype=c, Tag count=2'], split(info, "\n"))
+  call assert_match('.*Xtest1.c, Filetype=c, Tag count=2', split(info, "\n")[0])
   call cursor(4, 1)
   redir => info
   call feedkeys("\<Space>", 'xt')
