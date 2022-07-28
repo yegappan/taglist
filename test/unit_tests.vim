@@ -23,9 +23,9 @@ if do_profile
   profile! file */taglist/*
 endif
 
-set packpath+=../../../../..
 let g:Tlist_Show_Menu=1
-packadd taglist
+set rtp+=..
+source ../plugin/taglist.vim
 
 let s:save_cpo = &cpo
 set cpo&vim

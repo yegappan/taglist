@@ -17,8 +17,6 @@ jobs:
           sudo apt update && sudo apt install -y ctags
       - name: Checkout Code
         uses: actions/checkout@v2
-        with:
-          path: '.vim/pack/myplugins/opt/taglist'
       - name: Setup Vim
         uses: rhysd/action-setup-vim@v1
         id: vim
@@ -29,7 +27,7 @@ jobs:
           uname -a
           export VIMPRG=${{ steps.vim.outputs.executable }}
           $VIMPRG --version
-          cd .vim/pack/myplugins/opt/taglist/test
+          cd test
           ./run_tests.sh
   neovim-linux:
     name: neovim-linux
@@ -40,8 +38,6 @@ jobs:
           sudo apt update && sudo apt install -y ctags
       - name: Checkout Code
         uses: actions/checkout@v2
-        with:
-          path: '.vim/pack/myplugins/opt/taglist'
       - name: Setup Neovim
         uses: rhysd/action-setup-vim@v1
         id: vim
@@ -53,5 +49,5 @@ jobs:
           uname -a
           export VIMPRG=${{ steps.vim.outputs.executable }}
           $VIMPRG --version
-          cd .vim/pack/myplugins/opt/taglist/test
+          cd test
           ./run_tests.sh
