@@ -13,6 +13,7 @@ set nohidden
 " Set the $TAGLIST_PROFILE environment variable to profile the taglist plugin
 let do_profile = v:false
 if exists('$TAGLIST_PROFILE')
+  echomsg "Profiling is enabled"
   let do_profile = v:true
 endif
 

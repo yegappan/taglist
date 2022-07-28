@@ -32,6 +32,7 @@ jobs:
         run: |
           cd .vim/pack/myplugins/opt/taglist/test
           covimerage write_coverage taglist_profile.txt
+          ls -l
       - name: Take coverage
         run: |
           cd .vim/pack/myplugins/opt/taglist/test
