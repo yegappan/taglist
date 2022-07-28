@@ -8,9 +8,8 @@ jobs:
       matrix:
         vim:
           - nightly
+          - v9.0.0000
           - v8.2.0000
-          - v8.1.0000
-          - v8.0.0000
           - v7.4.1689
     steps:
       - name: Install ctags
