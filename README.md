@@ -1,5 +1,6 @@
-taglist - Source Code Browser plugin for Vim
-============================================
+![unit-tests](https://github.com/yegappan/taglist/workflows/unit-tests/badge.svg?branch=master)
+
+# taglist - Source Code Browser plugin for Vim
 
 The "Tag List" plugin is a source code browser plugin for Vim and 
 provides an overview of the structure of source code files and allows 

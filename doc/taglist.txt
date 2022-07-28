@@ -1,8 +1,8 @@
 *taglist.txt*	Plugin for browsing source code
 
 Author: Yegappan Lakshmanan  (yegappan AT yahoo DOT com)
-For Vim version 7.0 and above
-Last change: 2020 July 7
+For Vim version 7.4 and above
+Last change: 2022 July 25
 
 1. Overview 					|taglist-intro|
 2. Taglist on the internet			|taglist-internet|
@@ -12,10 +12,11 @@ Last change: 2020 July 7
 6. Options 					|taglist-options|
 7. Commands 					|taglist-commands|
 8. Global functions 				|taglist-functions|
-9. Extending 					|taglist-extend|
-10. FAQ 					|taglist-faq|
-11. License 					|taglist-license|
-12. Todo					|taglist-todo|
+9. Mappings 					|taglist-mappings|
+10. Extending 					|taglist-extend|
+11. FAQ 					|taglist-faq|
+12. License 					|taglist-license|
+13. Todo					|taglist-todo|
 
 ==============================================================================
 						*taglist-intro*
@@ -1149,8 +1150,6 @@ described below.
 |Tlist_Get_Tagname_By_Line()|		Return the name of the tag at or
 					before the specified line number in
 					the specified file.
-|Tlist_Set_App()|			Set the name of the application
-					controlling the taglist window.
 
 					    *Tlist_Get_Filenames()*
 Tlist_Get_Filenames()
@@ -1180,8 +1179,23 @@ Tlist_Get_Tagname_By_Line([{filename}, {linenumber}])
 		current line number are used.
 
 ==============================================================================
+						*taglist-mappings*
+9. Mappings~
+
+The taglist plugin provides the following maps:
+
+<plug>(TlistJumpTagUp)		Jump to the nearest tag before the current line.
+<plug>(TlistJumpTagDown)	Jump to the nearest tag after the current line.
+
+You can map these |<Plug>| mappings in your .vimrc to some key.  For example,
+the following commands map [t and ]t: >
+
+    nmap [t <plug>(TlistJumpTagUp)
+    nmap ]t <plug>(TlistJumpTagDown)
+<
+==============================================================================
 						*taglist-extend*
-9. Extending~
+10. Extending~
 
 The taglist plugin supports all the languages supported by the universal or
 exuberant ctags tool, which includes the following languages: Assembly, ASP,
@@ -1293,7 +1307,7 @@ are generated for the flags b, c and l respectively.
 
 ==============================================================================
 						*taglist-faq*
-10. Frequently Asked Questions~
+11. Frequently Asked Questions~
 
 Q. The taglist plugin doesn't work. The taglist window is empty and the tags
    defined in a file are not displayed. 
@@ -1466,7 +1480,7 @@ A. The taglist plugin uses the |CursorHold| autocmd to highlight the current
 
 ==============================================================================
 						*taglist-license*
-11. License~
+12. License~
 Permission is hereby granted to use and distribute the taglist plugin, with or
 without modifications, provided that this copyright notice is copied with it.
 Like anything else that's free, taglist.vim is provided *as is* and comes with
@@ -1476,7 +1490,7 @@ software.
 
 ==============================================================================
 						*taglist-todo*
-12. Todo~
+13. Todo~
 
 1. Group tags according to the scope and display them. For example,
    group all the tags belonging to a C++/Java class 

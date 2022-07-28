@@ -1,0 +1,44 @@
+name: coverage
+on: [push, pull_request]
+jobs:
+  linux:
+    name: linux
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Install ctags
+        run: |
+          sudo apt update && sudo apt install -y ctags
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          path: '.vim/pack/myplugins/opt/taglist'
+      - name: Run Tests
+        run: |
+          uname -a
+          export TAGLIST_PROFILE=1
+          export VIMPRG=vim
+          $VIMPRG --version
+          cd .vim/pack/myplugins/opt/taglist/test
+          ./run_tests.sh
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.5
+      - name: Install covimerage
+        run: |
+          pip install covimerage
+          covimerage --version
+      - name: Run covimerage
+        run: |
+          cd .vim/pack/myplugins/opt/taglist/test
+          covimerage write_coverage taglist_profile.txt
+      - name: Take coverage
+        run: |
+          cd .vim/pack/myplugins/opt/taglist/test
+          coverage report
+          coverage xml
+      - name: Upload coverage to codecov
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: .vim/pack/myplugins/opt/taglist/test/coverage.xml

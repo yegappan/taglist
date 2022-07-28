@@ -1,0 +1,57 @@
+name: unit-tests
+on: [push, pull_request]
+jobs:
+  linux:
+    name: linux
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        vim:
+          - nightly
+          - v9.0.0000
+          - v8.2.0000
+          - v7.4.1689
+    steps:
+      - name: Install ctags
+        run: |
+          sudo apt update && sudo apt install -y ctags
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          path: '.vim/pack/myplugins/opt/taglist'
+      - name: Setup Vim
+        uses: rhysd/action-setup-vim@v1
+        id: vim
+        with:
+          version: ${{ matrix.vim }}
+      - name: Run Tests
+        run: |
+          uname -a
+          export VIMPRG=${{ steps.vim.outputs.executable }}
+          $VIMPRG --version
+          cd .vim/pack/myplugins/opt/taglist/test
+          ./run_tests.sh
+  neovim-linux:
+    name: neovim-linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install ctags
+        run: |
+          sudo apt update && sudo apt install -y ctags
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          path: '.vim/pack/myplugins/opt/taglist'
+      - name: Setup Neovim
+        uses: rhysd/action-setup-vim@v1
+        id: vim
+        with:
+          version: stable
+          neovim: true
+      - name: Run Tests
+        run: |
+          uname -a
+          export VIMPRG=${{ steps.vim.outputs.executable }}
+          $VIMPRG --version
+          cd .vim/pack/myplugins/opt/taglist/test
+          ./run_tests.sh

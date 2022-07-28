@@ -1,8 +1,8 @@
 " File: taglist.vim
 " Author: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
-" Version: 5.0
-" Last Modified: July 7, 2020
-" Copyright: Copyright (C) 2002-2020 Yegappan Lakshmanan
+" Version: 6.0
+" Last Modified: July 27, 2022
+" Copyright: Copyright (C) 2002-2022 Yegappan Lakshmanan
 "            Permission is hereby granted to use and distribute this code,
 "            with or without modifications, provided that this copyright
 "            notice is copied with it. Like anything else that's free,
@@ -53,9 +53,8 @@
 "    window. You can use the ":help taglist" command to get more
 "    information about using the taglist plugin.
 
-" Need atleast Vim version 7.0 and above.
-if v:version < 700 || exists('loaded_taglist')
-  " plugin is already loaded
+" Need atleast Vim version 7.4 and above.
+if v:version < 704 || exists('g:loaded_taglist')
   finish
 endif
 
@@ -79,19 +78,19 @@ if !exists('*system')
 endif
 
 " Location of the exuberant ctags tool
-if !exists('Tlist_Ctags_Cmd')
+if !exists('g:Tlist_Ctags_Cmd')
   if executable('exuberant-ctags')
     " On Debian Linux, exuberant ctags is installed as exuberant-ctags
-    let Tlist_Ctags_Cmd = 'exuberant-ctags'
+    let g:Tlist_Ctags_Cmd = 'exuberant-ctags'
   elseif executable('exctags')
     " On Free-BSD, exuberant ctags is installed as exctags
-    let Tlist_Ctags_Cmd = 'exctags'
+    let g:Tlist_Ctags_Cmd = 'exctags'
   elseif executable('ctags')
-    let Tlist_Ctags_Cmd = 'ctags'
+    let g:Tlist_Ctags_Cmd = 'ctags'
   elseif executable('ctags.exe')
-    let Tlist_Ctags_Cmd = 'ctags.exe'
+    let g:Tlist_Ctags_Cmd = 'ctags.exe'
   elseif executable('tags')
-    let Tlist_Ctags_Cmd = 'tags'
+    let g:Tlist_Ctags_Cmd = 'tags'
   else
     echomsg 'Taglist: Exuberant ctags (http://ctags.sf.net) ' .
           \ 'not found in PATH. Plugin is not loaded.'
@@ -103,33 +102,36 @@ if !exists('Tlist_Ctags_Cmd')
 endif
 
 " Automatically open the taglist window on Vim startup
-if !exists('Tlist_Auto_Open')
-  let Tlist_Auto_Open = 0
+if !exists('g:Tlist_Auto_Open')
+  let g:Tlist_Auto_Open = 0
 endif
 
-if !exists('Tlist_Show_Menu')
-  let Tlist_Show_Menu = 0
+if !exists('g:Tlist_Show_Menu')
+  let g:Tlist_Show_Menu = 0
 endif
 
 " Process files even when the taglist window is not open
-if !exists('Tlist_Process_File_Always')
-  let Tlist_Process_File_Always = 0
+if !exists('g:Tlist_Process_File_Always')
+  let g:Tlist_Process_File_Always = 0
 endif
 
 " Define the taglist autocommand to automatically open the taglist window
 " on Vim startup
-if g:Tlist_Auto_Open
-  autocmd VimEnter * nested call taglist#Tlist_Window_Check_Auto_Open()
-endif
+augroup TaglistAutoCmds
+  au!
+  if g:Tlist_Auto_Open
+    autocmd VimEnter * ++nested call taglist#Tlist_Window_Check_Auto_Open()
+  endif
 
-" Refresh the taglist
-if g:Tlist_Process_File_Always
-  autocmd BufEnter * call taglist#Tlist_Refresh()
-endif
+  " Refresh the taglist
+  if g:Tlist_Process_File_Always
+    autocmd BufEnter * call taglist#Tlist_Refresh()
+  endif
 
-if g:Tlist_Show_Menu
-  autocmd GUIEnter * call taglist#Tlist_Menu_Init()
-endif
+  if g:Tlist_Show_Menu
+    autocmd GUIEnter * call taglist#Tlist_Menu_Init()
+  endif
+augroup END
 
 " Define the user commands to manage the taglist window
 command! -nargs=0 -bar TlistToggle call taglist#Tlist_Window_Toggle()
@@ -155,8 +157,8 @@ command! -nargs=* -complete=file TlistSessionLoad
       \ call taglist#Tlist_Session_Load(<q-args>)
 command! -nargs=* -complete=file TlistSessionSave
       \ call taglist#Tlist_Session_Save(<q-args>)
-command! -bar TlistLock let Tlist_Auto_Update=0
-command! -bar TlistUnlock let Tlist_Auto_Update=1
+command! -bar TlistLock let g:Tlist_Auto_Update = v:false
+command! -bar TlistUnlock let g:Tlist_Auto_Update = v:true
 
 " Commands for enabling/disabling debug and to display debug messages
 command! -nargs=? -complete=file -bar TlistDebug
