@@ -1185,7 +1185,7 @@ function! s:Tlist_Window_Init() abort
   augroup TagListWinAutoCmds
     autocmd!
     " Display the tag prototype for the tag under the cursor.
-    autocmd CursorHold __Tag_List__ call Tlist_Window_Show_Info()
+    autocmd CursorHold __Tag_List__ call s:Tlist_Window_Show_Info()
     " Highlight the current tag periodically
     autocmd CursorHold * silent call taglist#Tlist_Window_Highlight_Tag(fnamemodify(bufname('%'), ':p'), line('.'), 1, 0)
 
@@ -1482,32 +1482,6 @@ function! s:Tlist_Ballon_Expr() abort
 
   " Get the tag search pattern and display it
   return s:Tlist_Get_Tag_Prototype(finfo.tags[tidx])
-endfunction
-
-" Tlist_Window_Check_Width
-" Check the width of the taglist window. For horizontally split windows, the
-" 'winfixheight' option is used to fix the height of the window. For
-" vertically split windows, Vim doesn't support the 'winfixwidth' option. So
-" need to handle window width changes from this function.
-function! Tlist_Window_Check_Width() abort
-  let tlist_winnr = bufwinnr(s:TagList_title)
-  if tlist_winnr == -1
-    return
-  endif
-
-  let width = winwidth(tlist_winnr)
-  if width != g:Tlist_WinWidth
-    call s:Tlist_Log_Msg('Tlist_Window_Check_Width: Changing window ' .
-          \ 'width from ' . width . ' to ' . g:Tlist_WinWidth)
-    let save_winnr = winnr()
-    if save_winnr != tlist_winnr
-      call s:Tlist_Exe_Cmd_No_Acmds(tlist_winnr . 'wincmd w')
-    endif
-    exe 'vert resize ' . g:Tlist_WinWidth
-    if save_winnr != tlist_winnr
-      call s:Tlist_Exe_Cmd_No_Acmds('wincmd p')
-    endif
-  endif
 endfunction
 
 " Tlist_Window_Exit_Only_Window

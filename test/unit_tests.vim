@@ -110,6 +110,21 @@ func Test_tag_highlight()
   bw!
 endfunc
 
+" Test for the CursorHold autocmd to highlight the current tag
+func Test_CursorHold_tag_highlight()
+  edit Xtest1.c
+  Tlist
+  call cursor(9, 1)
+  redir => info
+    doautocmd TagListWinAutoCmds CursorHold
+  redir END
+  1wincmd w
+  let m = getmatches()
+  call assert_equal('\%6l\s\+\zs.*', m[0].pattern)
+  TlistClose
+  bw!
+endfunc
+
 " Test for getting the current tag name and prototype
 func Test_current_tag_show()
   edit Xtest1.c
@@ -177,24 +192,38 @@ func Test_tlist_window_show_info()
   1wincmd w
   call cursor(3, 1)
   redir => info
-  call feedkeys("\<Space>", 'xt')
+    call feedkeys("\<Space>", 'xt')
   redir END
   call assert_match('.*Xtest1.c, Filetype=c, Tag count=2', split(info, "\n")[0])
   call cursor(4, 1)
   redir => info
-  call feedkeys("\<Space>", 'xt')
+    call feedkeys("\<Space>", 'xt')
   redir END
   call assert_equal(['Tag type=function, Tag count=2'], split(info, "\n"))
   call cursor(6, 1)
   redir => info
-  call feedkeys("\<Space>", 'xt')
+    call feedkeys("\<Space>", 'xt')
   redir END
   call assert_equal(['void abc()'], split(info, "\n"))
   call cursor(7, 1)
   redir => info
-  call feedkeys("\<Space>", 'xt')
+    call feedkeys("\<Space>", 'xt')
   redir END
   call assert_equal([], split(info, "\n"))
+  TlistClose
+  bw!
+endfunc
+
+" Test for the CursorHold autocmd in the taglist window
+func Test_tlist_window_CursorHold_autocmd()
+  edit Xtest1.c
+  Tlist
+  1wincmd w
+  call cursor(4, 1)
+  redir => info
+    doautocmd TagListWinAutoCmds CursorHold
+  redir END
+  call assert_equal(['Tag type=function, Tag count=2'], split(info, "\n"))
   TlistClose
   bw!
 endfunc
