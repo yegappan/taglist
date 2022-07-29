@@ -1093,7 +1093,7 @@ function! s:Tlist_Window_Init() abort
 
   " Setup balloon evaluation to display tag prototype
   if has('balloon_eval')
-    setlocal balloonexpr=taglist#Tlist_Ballon_Expr()
+    setlocal balloonexpr=s:Tlist_Ballon_Expr()
     set ballooneval
   endif
 
