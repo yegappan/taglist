@@ -4,7 +4,7 @@
 
 The "Tag List" plugin is a source code browser plugin for Vim and provides an overview of the structure of source code files and allows you to efficiently browse through source code files for different programming languages.
 
-This plugin works with both Vim and Neovim and will work on all the platforms where Vim/Neovim and ctags are supported.  This plugin will work in both console and GUI Vim. This version of the MRU plugin needs Vim 7.4 and above.
+This plugin works with both Vim and Neovim and will work on all the platforms where Vim/Neovim and ctags are supported.  This plugin will work in both console and GUI Vim. This version of the taglist plugin needs Vim 7.4 and above.
 
 This plugin relies on exuberant or Universal ctags to get the list of tags defined in a source file.
 
