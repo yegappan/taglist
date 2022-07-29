@@ -2,7 +2,7 @@
 
 Author: Yegappan Lakshmanan  (yegappan AT yahoo DOT com)
 For Vim version 7.4 and above
-Last change: 2022 July 25
+Last change: 2022 July 29
 
 1. Overview 					|taglist-intro|
 2. Taglist on the internet			|taglist-internet|
@@ -74,7 +74,7 @@ The home page of the taglist plugin is at:
 
 The taglist plugin requires the following:
 
-    * Vim version 7.0 and above
+    * Vim version 7.4 and above
     * Universal Ctags or Exuberant Ctags
 
 The taglist plugin will work on all the platforms where the Universal ctags or
@@ -90,7 +90,7 @@ distributions.  You can download the exuberant ctags utility from
 <
 Note that there are no recent releases of exuberant ctags (after 2009).
 Instead of exuberant ctags, you can use the actively maintained Universal
-Ctags which can be downloaded from
+Ctags (which is compatible with exuberant ctags) which can be downloaded from
 >
 	https://ctags.io
 <
@@ -1311,8 +1311,8 @@ are generated for the flags b, c and l respectively.
 
 Q. The taglist plugin doesn't work. The taglist window is empty and the tags
    defined in a file are not displayed. 
-A. Are you using Vim version 7.0 and above? The taglist plugin relies on the
-   features supported by Vim version 7.0 and above. You can use the following
+A. Are you using Vim version 7.4 and above? The taglist plugin relies on the
+   features supported by Vim version 7.4 and above. You can use the following
    command to get the Vim version:
 >
 	$ vim --version
