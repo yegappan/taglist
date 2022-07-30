@@ -11,9 +11,6 @@ jobs:
           - v9.0.0000
           - v8.2.0000
           - v7.4.1689
-        include:
-          - vim: v9.0.0000
-            gui: true
     steps:
       - name: Install ctags
         run: |
@@ -25,11 +22,6 @@ jobs:
         id: vim
         with:
           version: ${{ matrix.vim }}
-      - name: Set up environment
-        run: |
-          if ${{ matrix.coverage == true }}; then
-            TAGLIST_TEST_GUI=1
-          fi
       - name: Run Tests
         run: |
           uname -a
@@ -59,3 +51,24 @@ jobs:
           $VIMPRG --version
           cd test
           ./run_tests.sh
+  windows:
+    name: windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Setup Vim
+        uses: rhysd/action-setup-vim@v1
+      - name: Download Ctags
+        shell: PowerShell
+        run: Invoke-WebRequest -Uri https://github.com/universal-ctags/ctags-win32/releases/download/2022-07-25%2Fp5.9.20220724.0-14-g55e668a/ctags-2022-07-25_p5.9.20220724.0-14-g55e668a-x64.zip -OutFile ctags.zip
+      - name: Extract Ctags
+        shell: PowerShell
+        run: Expand-Archive -Path ctags.zip -DestinationPath $env:USERPROFILE
+      - name: Run Tests
+        run: |
+          $env:PATH = $env:PATH + ';' + $env:USERPROFILE
+          Get-ComputerInfo -Property Windows*
+          cd test
+          set VIMPRG=gvim
+          .\run_tests.cmd
