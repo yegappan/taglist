@@ -1213,6 +1213,9 @@ endfunc
 
 " Test for the 'Tags' base menu
 func Test_gui_base_menu()
+  if !exists('*menu_info')
+    return
+  endif
   %bw!
   let m = menu_info('Tags')
   call assert_equal({'modes': 'a', 'name': 'T&ags', 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-'], 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
@@ -1222,6 +1225,9 @@ endfunc
 
 " Test for the 'Tags' menu with the tags
 func Test_gui_menu_with_tags()
+  if !exists('*menu_info')
+    return
+  endif
   edit Xtest2.vim
   let m = menu_info('Tags')
   call assert_equal({'modes': 'a', 'name': 'T&ags', 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xtest2.vim', '-SEP2-', 'variable', 'function'], 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
@@ -1244,6 +1250,9 @@ endfunc
 
 " Test for refreshing the menu with the tags when jumping between files
 func Test_gui_menu_refresh()
+  if !exists('*menu_info')
+    return
+  endif
   edit Xtest2.vim
   let m = menu_info('Tags')
   call assert_equal({'modes': 'a', 'name': 'T&ags', 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xtest2.vim', '-SEP2-', 'variable', 'function'], 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
