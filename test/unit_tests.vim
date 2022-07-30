@@ -448,10 +448,10 @@ func Test_modify_tags_in_file()
   let r = getbufline(winbufnr(1), 1, '$')
   call assert_equal([''], r[1:])
 
-  let g:Tlist_Compact_Format=0
   TlistClose
   call delete('Xtest3.c')
   %bw!
+  let g:Tlist_Compact_Format=0
 endfunc
 
 " Test for deleting a file in the taglist window.
@@ -462,8 +462,10 @@ func Test_tlist_window_delete_file()
   edit Xtest2.vim
   enew
   1wincmd w
+  call cursor(1, 1)
+  normal d
   call cursor(3, 1)
-  call feedkeys("d", 'xt')
+  normal d
   let l = [
 	\  'Xtest2.vim',
 	\  '  variable',
@@ -625,14 +627,15 @@ func Test_tagjump_chronological_order()
   call feedkeys("\<CR>", 'xt')
   call assert_equal('Xtest1.c', bufname(''))
   call assert_equal(3, line('.'))
-  let g:Tlist_Sort_Type="order"
   TlistClose
   %bw!
+  let g:Tlist_Sort_Type="order"
 endfunc
 
 " Test for displaying detailed help text in the taglist window
 func Test_tlist_window_toggle_help()
   edit Xtest1.c
+  TlistOpen
   TlistOpen
   call feedkeys("\<F1>", 'xt')
   let r = getbufline(winbufnr(1), 1, '$')
@@ -693,8 +696,8 @@ func Test_tlist_window_toggle_help_compact_format()
   call feedkeys("\<F1>", 'xt')
   call assert_equal([''], getline(1, '$'))
   TlistClose
-  let g:Tlist_Compact_Format=0
   %bw!
+  let g:Tlist_Compact_Format=0
 endfunc
 
 " Test for opening a file in a new window, previous window and a new tab.
@@ -808,8 +811,8 @@ func Test_tlist_lock()
   call assert_match('Xtest1.c', l[0])
   call assert_match('Xtest2.vim', l[1])
   TlistClose
-  let g:Tlist_Compact_Format=0
   %bw!
+  let g:Tlist_Compact_Format=0
 endfunc
 
 " Test for the :TlistAddFiles command
@@ -903,8 +906,8 @@ func Test_Tlist_Close_On_Select()
   call feedkeys("\<CR>", 'xt')
   call assert_equal([1, 1], [winnr(), winnr('$')])
   call assert_equal([3, 'Xtest1.c'], [line('.'), bufname('')])
-  let g:Tlist_Close_On_Select=0
   %bw!
+  let g:Tlist_Close_On_Select=0
 endfunc
 
 " When opening a file from the taglist window, a buffer with 'buftype' set
@@ -945,9 +948,9 @@ func Test_Tlist_Auto_Highlight_Tag()
   1wincmd w
   let m = getmatches()
   call assert_equal('\%5l\s\+\zs.*', m[0].pattern)
-  let g:Tlist_Auto_Highlight_Tag=1
   TlistClose
   %bw!
+  let g:Tlist_Auto_Highlight_Tag=1
 endfunc
 
 " Test for the 'Tlist_Display_Prototype' option
@@ -968,9 +971,9 @@ func Test_Tlist_Display_Prototype()
   call cursor(6, 1)
   call feedkeys("\<CR>", 'xt')
   call assert_equal([2, 'Xtest1.c', 7], [winnr(), bufname(''), line('.')])
-  let g:Tlist_Display_Prototype=0
   TlistClose
   %bw!
+  let g:Tlist_Display_Prototype=0
 endfunc
 
 " Test for the 'Tlist_Show_One_File' option
@@ -981,18 +984,37 @@ func Test_Tlist_Show_One_File()
   edit Xtest2.vim
   enew
   Tlist
+
   let r = getbufline(winbufnr(1), 1, '$')
   call assert_equal([''], r)
+
   edit Xtest1.c
   let r = getbufline(winbufnr(1), 1, '$')
   call assert_match('Xtest1.c (.*)', r[0])
+
   edit Xtest2.vim
   let r = getbufline(winbufnr(1), 1, '$')
   call assert_match('Xtest2.vim (.*)', r[0])
+
   " Editing a non-existing file should not refresh the taglist window
   edit Xtest3.py
   let r = getbufline(winbufnr(1), 1, '$')
   call assert_match('Xtest2.vim (.*)', r[0])
+
+  " Test for jumping to a tag
+  bw Xtest1.c
+  1wincmd w
+  call cursor(6, 1)
+  call feedkeys("\<CR>", 'xt')
+  call assert_equal(7, line('.'))
+
+  " Test for highlight the current tag
+  call cursor(4, 1)
+  TlistHighlightTag
+  1wincmd w
+  let m = getmatches()
+  call assert_equal('\%5l\s\+\zs.*', m[0].pattern)
+
   TlistClose
   %bw!
   let g:Tlist_Show_One_File=0
@@ -1009,18 +1031,21 @@ func Test_Show_One_File_Highlight_Tag()
   " When removing an older file, make sure the index for the current file gets
   " updated
   bw Xtest2.vim
+
   call cursor(4, 1)
   redir => l
     TlistShowTag
   redir END
   let l = split(l, "\n")
   call assert_equal(['xyz'], l)
+
   call cursor(8, 1)
   redir => l
     TlistShowTag
   redir END
   let l = split(l, "\n")
   call assert_equal(['abc'], l)
+
   TlistClose
   %bw!
   let g:Tlist_Show_One_File=0
@@ -1085,9 +1110,9 @@ func Test_bdel_buffer()
   enew
   bdel Xtest1.c
   call assert_equal([''], getbufline(winbufnr(1), 1, '$'))
-  let g:Tlist_Compact_Format=0
   TlistClose
   %bw!
+  let g:Tlist_Compact_Format=0
 endfunc
 
 " Test for the 'Tlist_Enable_Fold_Column' option
@@ -1173,8 +1198,8 @@ func Test_Tlist_Auto_Update()
   let r = getbufline(winbufnr(1), 1, '$')
   call assert_match('Xtest1.c (.*)', r[0])
   TlistClose
-  let g:Tlist_Compact_Format=0
   %bw!
+  let g:Tlist_Compact_Format=0
 endfunc
 
 " Test for the 'Tags' base menu
@@ -1286,7 +1311,7 @@ func Test_tlist_debug()
   TlistDebug
   TlistUndebug
   redir => info
-  TlistMessages
+    TlistMessages
   redir END
   call assert_equal('Taglist: No debug messages', split(info, "\n")[0])
 
@@ -1300,17 +1325,36 @@ func Test_tlist_debug()
   TlistUndebug
   call assert_true(len(readfile('debug.log')) > 10)
   call delete('debug.log')
+
+  " try to use a non-writable log file
+  redir => info
+    TlistDebug /a/b/c/d/debug.log
+  redir END
+  call assert_equal('Taglist: Failed to create /a/b/c/d/debug.log',
+	\ split(info, "\n")[0])
+  TlistUndebug
+
   %bw!
 endfunc
 
 " Test for zooming out and zooming in the taglist window
 func Test_tlist_window_Zoom()
+  " vertically split taglist window
   TlistOpen
   normal x
   call assert_equal(&columns - 2, winwidth(0))
   normal x
   call assert_equal(g:Tlist_WinWidth, winwidth(0))
   TlistClose
+  " horizontally split taglist window
+  let g:Tlist_Use_Horiz_Window=1
+  TlistOpen
+  normal x
+  call assert_equal(&lines - 4, winheight(0))
+  normal x
+  call assert_equal(g:Tlist_WinHeight, winheight(0))
+  TlistClose
+  let g:Tlist_Use_Horiz_Window=0
 endfunc
 
 " Test for updating the tags in a file from the taglist window
@@ -1326,6 +1370,100 @@ func Test_tlist_window_update_file()
   TlistClose
   %bw!
   call delete('Xtest4.c')
+endfunc
+
+" Test for using a custom filetype setting (g:tlist_<ft>_settings)
+func Test_custom_filetype_settings()
+  call writefile([], 'Xtest')
+  e Xtest
+  set ft=myft
+  Tlist
+
+  let g:tlist_myft_settings=''
+  redir => l
+    TlistUpdate
+  redir END
+  call assert_equal('Taglist: Invalid ctags option setting - ;',
+	\ l->split("\n")[0])
+
+  let g:tlist_myft_settings='myft'
+  redir => l
+    TlistUpdate
+  redir END
+  call assert_equal('Taglist: Invalid ctags option setting - myft;',
+	\ l->split("\n")[0])
+
+  let g:tlist_myft_settings='myft;f:'
+  redir => l
+    TlistUpdate
+  redir END
+  call assert_equal('Taglist: Invalid ctags option setting - myft;f:;',
+	\ l->split("\n")[0])
+
+  let g:tlist_myft_settings='myft;:func'
+  redir => l
+    TlistUpdate
+  redir END
+  call assert_equal('Taglist: Invalid ctags option setting - myft;:func;',
+	\ l->split("\n")[0])
+
+  let g:tlist_myft_settings='myft;:'
+  redir => l
+    TlistUpdate
+  redir END
+  call assert_equal('Taglist: Invalid ctags option setting - myft;:;',
+	\ l->split("\n")[0])
+
+  TlistClose
+  %bw!
+  call delete('Xtest')
+endfunc
+
+" Test for custom highlight groups
+func Test_custom_highlight_groups()
+  if str2nr(&t_Co) <= 2
+    " This test needs more than 2 colors
+    return
+  endif
+  hi MyTagListTagName ctermfg=2
+  hi MyTagListComment ctermfg=2
+  hi MyTagListTitle ctermfg=2
+  hi MyTagListFileName ctermfg=2
+  hi MyTagListTagScope ctermfg=2
+
+  Tlist
+  redir => l
+    hi TagListTagName
+  redir END
+  call assert_equal('TagListTagName xxx links to MyTagListTagName',
+        \ split(l, "\n")[0])
+  redir => l
+    hi TagListComment
+  redir END
+  call assert_equal('TagListComment xxx links to MyTagListComment',
+        \ split(l, "\n")[0])
+  redir => l
+    hi TagListTitle
+  redir END
+  call assert_equal('TagListTitle   xxx links to MyTagListTitle',
+        \ split(l, "\n")[0])
+  redir => l
+    hi TagListFileName
+  redir END
+  call assert_equal('TagListFileName xxx links to MyTagListFileName',
+	\ split(l, "\n")[0])
+  redir => l
+    hi TagListTagScope
+  redir END
+  call assert_equal('TagListTagScope xxx links to MyTagListTagScope',
+	\ split(l, "\n")[0])
+  TlistClose
+
+  hi clear MyTagListTagName
+  hi clear MyTagListComment
+  hi clear MyTagListTitle
+  hi clear MyTagListFileName
+  hi clear MyTagListTagScope
 endfunc
 
 " TODO:

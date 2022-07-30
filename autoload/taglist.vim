@@ -517,25 +517,20 @@ let s:tlist_debug_file = ''
 " Enable logging of taglist debug messages.
 function! taglist#Tlist_Debug_Enable(...) abort
   let s:tlist_debug = v:true
-
-  if a:0 > 0
-    let fname = a:1
-  else
-    let fname = ''
-  endif
+  let fname = a:1
 
   " If a file name is supplied for logging messages, then empty the file
   if fname !=# ''
     let s:tlist_debug_file = fnamemodify(fname, ':p')
 
     " Empty the log file
-    call writefile([], s:tlist_debug_file)
-
-    " Check whether the log file is present/created
-    if !filewritable(s:tlist_debug_file)
+    try
+      call writefile([], s:tlist_debug_file)
+    catch
+      " not able to write to the log file
       call s:Tlist_Warning_Msg('Taglist: Failed to create ' . s:tlist_debug_file)
       let s:tlist_debug_file = ''
-    endif
+    endtry
   else
     let s:tlist_msg = []
   endif
@@ -776,13 +771,12 @@ function! s:Tlist_FileType_Init(ftype) abort
     return v:false
   endif
 
-  let s:ftypes[a:ftype] = {'ctags_flags': '', 'ctags_args': '', 'tagtypes': {}}
-  let s:ordered_ttypes[a:ftype] = []
-
   " Process all the specified ctags flags. The format is
   " flag1:name1;flag2:name2;flag3:name3
   let ctags_flags = ''
   let cnt = 0
+  let tagtypes = {}
+  let ordered_ttypes = []
   while settings !=# ''
     " Extract the flag
     let pos = stridx(settings, ':')
@@ -813,14 +807,17 @@ function! s:Tlist_FileType_Init(ftype) abort
 
     let cnt += 1
 
-    let s:ftypes[a:ftype].tagtypes[flag] = {'fullname': name}
-    call add(s:ordered_ttypes[a:ftype], flag)
+    let tagtypes[flag] = {'fullname': name}
+    call add(ordered_ttypes, flag)
     let ctags_flags .= flag
   endwhile
 
+  let s:ftypes[a:ftype] = {}
   let s:ftypes[a:ftype].ctags_args = '--language-force=' . ctags_ftype . ' ' .
         \ '--' . ctags_ftype . '-types=' . ctags_flags
   let s:ftypes[a:ftype].ctags_flags = ctags_flags
+  let s:ftypes[a:ftype].tagtypes = tagtypes
+  let s:ordered_ttypes[a:ftype] = ordered_ttypes
 
   return v:true
 endfunction
@@ -1027,6 +1024,11 @@ function! s:Tlist_Window_Init() abort
     " Colors to highlight various taglist window elements
     " If user defined highlighting group exists, then use them.
     " Otherwise, use default highlight groups.
+    highlight clear TagListTagName
+    highlight clear TagListComment
+    highlight clear TagListTitle
+    highlight clear TagListFileName
+    highlight clear TagListTagScope
     if hlexists('MyTagListTagName')
       highlight link TagListTagName MyTagListTagName
     else
