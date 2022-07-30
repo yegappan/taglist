@@ -69,5 +69,7 @@ jobs:
         run: |
           $env:PATH = $env:PATH + ';' + $env:USERPROFILE + ';' + $env:USERPROFILE + '\vim-stable'
           Get-ComputerInfo -Property Windows*
+          echo %PATH%
+          vim --version
           cd test
           .\run_tests.cmd
