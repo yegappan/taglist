@@ -682,6 +682,21 @@ func Test_tlist_window_toggle_help()
   %bw!
 endfunc
 
+" Test for toggling the taglist window help text in compact mode
+" Help text is not displayed in compact mode.
+func Test_tlist_window_toggle_help_compact_format()
+  let g:Tlist_Compact_Format=1
+  TlistOpen
+  call assert_equal([''], getline(1, '$'))
+  call feedkeys("\<F1>", 'xt')
+  call assert_equal([''], getline(1, '$'))
+  call feedkeys("\<F1>", 'xt')
+  call assert_equal([''], getline(1, '$'))
+  TlistClose
+  let g:Tlist_Compact_Format=0
+  %bw!
+endfunc
+
 " Test for opening a file in a new window, previous window and a new tab.
 func Test_tlist_window_open_file()
   edit Xtest1.c
@@ -978,10 +993,38 @@ func Test_Tlist_Show_One_File()
   edit Xtest3.py
   let r = getbufline(winbufnr(1), 1, '$')
   call assert_match('Xtest2.vim (.*)', r[0])
-  let g:Tlist_Show_One_File=0
-  let g:Tlist_Compact_Format=0
   TlistClose
   %bw!
+  let g:Tlist_Show_One_File=0
+  let g:Tlist_Compact_Format=0
+endfunc
+
+" Test for highlighting the current tag when Tlist_Show_One_File=1
+func Test_Show_One_File_Highlight_Tag()
+  let g:Tlist_Compact_Format=1
+  let g:Tlist_Show_One_File=1
+  Tlist
+  edit Xtest2.vim
+  edit Xtest1.c
+  " When removing an older file, make sure the index for the current file gets
+  " updated
+  bw Xtest2.vim
+  call cursor(4, 1)
+  redir => l
+    TlistShowTag
+  redir END
+  let l = split(l, "\n")
+  call assert_equal(['xyz'], l)
+  call cursor(8, 1)
+  redir => l
+    TlistShowTag
+  redir END
+  let l = split(l, "\n")
+  call assert_equal(['abc'], l)
+  TlistClose
+  %bw!
+  let g:Tlist_Show_One_File=0
+  let g:Tlist_Compact_Format=0
 endfunc
 
 " Test for 'Tlist_Display_Tag_Scope' option
@@ -1223,6 +1266,66 @@ func Test_gui_single_click()
   TlistClose
   %bw!
   let g:Tlist_Use_SingleClick=0
+endfunc
+
+" Test for :TlistDebug, :TlistUndebug and :TlistMessages commands
+func Test_tlist_debug()
+  " debug messages in a variable
+  TlistDebug
+  Tlist
+  edit Xtest1.c
+  call cursor(4, 1)
+  TlistHighlightTag
+  TlistClose
+  TlistUndebug
+  TlistMessages
+  call assert_true(len(getline(1, '$')) > 10)
+  %bw!
+
+  " no debug messages
+  TlistDebug
+  TlistUndebug
+  redir => info
+  TlistMessages
+  redir END
+  call assert_equal('Taglist: No debug messages', split(info, "\n")[0])
+
+  " debug messages in a file
+  TlistDebug debug.log
+  Tlist
+  edit Xtest1.c
+  call cursor(4, 1)
+  TlistHighlightTag
+  TlistClose
+  TlistUndebug
+  call assert_true(len(readfile('debug.log')) > 10)
+  call delete('debug.log')
+  %bw!
+endfunc
+
+" Test for zooming out and zooming in the taglist window
+func Test_tlist_window_Zoom()
+  TlistOpen
+  normal x
+  call assert_equal(&columns - 2, winwidth(0))
+  normal x
+  call assert_equal(g:Tlist_WinWidth, winwidth(0))
+  TlistClose
+endfunc
+
+" Test for updating the tags in a file from the taglist window
+func Test_tlist_window_update_file()
+  call writefile([''], 'Xtest4.c')
+  edit Xtest4.c
+  TlistOpen
+  call assert_equal(4, line('$'))
+  call writefile(['#define FOO 1'], 'Xtest4.c')
+  call cursor(3, 1)
+  normal u
+  call assert_equal(6, line('$'))
+  TlistClose
+  %bw!
+  call delete('Xtest4.c')
 endfunc
 
 " TODO:

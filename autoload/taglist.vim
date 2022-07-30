@@ -564,6 +564,7 @@ function! taglist#Tlist_Debug_Show() abort
   call setbufline('', 1, s:tlist_msg)
   " Move the cursor to the first line
   normal! gg
+  setlocal nomodified
 endfunction
 
 " Tlist_Log_Msg
@@ -969,6 +970,13 @@ function! s:Tlist_Remove_File(file_idx, user_request) abort
     call s:Tlist_Update_Remove_List(fname, v:true)
   endif
 
+  if g:Tlist_Show_One_File && s:tlist_cur_file_idx != -1
+    " If only one file is displayed in the taglist window, when removing a
+    " file from the taglist, the current file index may become invalid.
+    " Need to get the correct index after the file list is updated.
+    let save_filename = s:files[s:tlist_cur_file_idx].filename
+  endif
+
   " Remove the file information
   call remove(s:files, fidx)
 
@@ -979,11 +987,7 @@ function! s:Tlist_Remove_File(file_idx, user_request) abort
   let s:tlist_file_count -= 1
 
   if g:Tlist_Show_One_File
-    " If the tags for only one file is displayed and if we just
-    " now removed that file, then invalidate the current file idx
-    if s:tlist_cur_file_idx == fidx
-      let s:tlist_cur_file_idx = -1
-    endif
+    let s:tlist_cur_file_idx = Tlist_Get_File_Index(save_filename)
   endif
 endfunction
 
@@ -2238,7 +2242,7 @@ endfunction
 
 " Tlist_Window_Update_File()
 " Update the tags displayed in the taglist window
-function! Tlist_Window_Update_File() abort
+function! s:Tlist_Window_Update_File() abort
   call s:Tlist_Log_Msg('Tlist_Window_Update_File()')
   let fidx = s:Tlist_Window_Get_File_Index_By_Linenum(line('.'))
   if fidx == -1
@@ -2271,7 +2275,7 @@ function! taglist#Tlist_Update_Current_File() abort
   call s:Tlist_Log_Msg('Tlist_Update_Current_File()')
   if winnr() == bufwinnr(s:TagList_title)
     " In the taglist window. Update the current file
-    call Tlist_Window_Update_File()
+    call s:Tlist_Window_Update_File()
   else
     " Not in the taglist window. Update the current buffer
     let filename = fnamemodify(bufname('%'), ':p')
