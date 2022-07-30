@@ -1384,35 +1384,35 @@ func Test_custom_filetype_settings()
     TlistUpdate
   redir END
   call assert_equal('Taglist: Invalid ctags option setting - ;',
-	\ l->split("\n")[0])
+	\ split(l, "\n")[0])
 
   let g:tlist_myft_settings='myft'
   redir => l
     TlistUpdate
   redir END
   call assert_equal('Taglist: Invalid ctags option setting - myft;',
-	\ l->split("\n")[0])
+	\ split(l, "\n")[0])
 
   let g:tlist_myft_settings='myft;f:'
   redir => l
     TlistUpdate
   redir END
   call assert_equal('Taglist: Invalid ctags option setting - myft;f:;',
-	\ l->split("\n")[0])
+	\ split(l, "\n")[0])
 
   let g:tlist_myft_settings='myft;:func'
   redir => l
     TlistUpdate
   redir END
   call assert_equal('Taglist: Invalid ctags option setting - myft;:func;',
-	\ l->split("\n")[0])
+	\ split(l, "\n")[0])
 
   let g:tlist_myft_settings='myft;:'
   redir => l
     TlistUpdate
   redir END
   call assert_equal('Taglist: Invalid ctags option setting - myft;:;',
-	\ l->split("\n")[0])
+	\ split(l, "\n")[0])
 
   TlistClose
   %bw!
