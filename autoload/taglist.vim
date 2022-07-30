@@ -561,7 +561,7 @@ function! taglist#Tlist_Debug_Show() abort
   " Delete all the lines (if the buffer already exists)
   silent! %delete _
   " Add the messages
-  call setbufline('', 1, s:tlist_msg)
+  call setline(1, s:tlist_msg)
   " Move the cursor to the first line
   normal! gg
   setlocal nomodified
