@@ -2,8 +2,15 @@
 
 # Script to run the unit-tests for the taglist Vim plugin
 
+if [ -n "$TAGLIST_TEST_GUI" ]
+then
+    GUI_FLAGS="-g -f"
+else
+    GUI_FLAGS=
+fi
+
 VIMPRG=${VIMPRG:=/usr/bin/vim}
-VIM_CMD="$VIMPRG -N -u NONE -U NONE -i NONE --noplugin"
+VIM_CMD="$VIMPRG ${GUI_FLAGS} -N -u NONE -U NONE -i NONE --noplugin"
 
 $VIM_CMD -S unit_tests.vim
 

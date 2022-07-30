@@ -11,6 +11,9 @@ jobs:
           - v9.0.0000
           - v8.2.0000
           - v7.4.1689
+        include:
+          - vim: v9.0.0000
+            gui: true
     steps:
       - name: Install ctags
         run: |
@@ -22,6 +25,11 @@ jobs:
         id: vim
         with:
           version: ${{ matrix.vim }}
+      - name: Set up environment
+        run: |
+          if ${{ matrix.coverage == true }}; then
+            TAGLIST_TEST_GUI=1
+          fi
       - name: Run Tests
         run: |
           uname -a

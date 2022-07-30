@@ -1008,12 +1008,20 @@ func Test_Tlist_Show_One_File()
   call feedkeys("\<CR>", 'xt')
   call assert_equal(7, line('.'))
 
-  " Test for highlight the current tag
+  " Test for highlighting the current tag
   call cursor(4, 1)
   TlistHighlightTag
   1wincmd w
   let m = getmatches()
   call assert_equal('\%5l\s\+\zs.*', m[0].pattern)
+
+  " Test for getting information about a tag type
+  1wincmd w
+  call cursor(2, 1)
+  redir => info
+    call feedkeys("\<Space>", 'xt')
+  redir END
+  call assert_equal(['Tag type=variable, Tag count=1'], split(info, "\n"))
 
   TlistClose
   %bw!
@@ -1393,11 +1401,25 @@ func Test_custom_filetype_settings()
   call assert_equal('Taglist: Invalid ctags option setting - myft;',
 	\ split(l, "\n")[0])
 
-  let g:tlist_myft_settings='myft;f:'
+  let g:tlist_myft_settings='myft:'
   redir => l
     TlistUpdate
   redir END
-  call assert_equal('Taglist: Invalid ctags option setting - myft;f:;',
+  call assert_equal('Taglist: Invalid ctags option setting - myft:;',
+	\ split(l, "\n")[0])
+
+  let g:tlist_myft_settings='myft:func'
+  redir => l
+    TlistUpdate
+  redir END
+  call assert_equal('Taglist: Invalid ctags option setting - myft:func;',
+	\ split(l, "\n")[0])
+
+  let g:tlist_myft_settings='myft;func:'
+  redir => l
+    TlistUpdate
+  redir END
+  call assert_equal('Taglist: Invalid ctags option setting - myft;func:;',
 	\ split(l, "\n")[0])
 
   let g:tlist_myft_settings='myft;:func'
