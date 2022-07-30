@@ -24,6 +24,7 @@ if do_profile
 endif
 
 let g:Tlist_Show_Menu=1
+let g:Tlist_Test=1
 set rtp+=..
 source ../plugin/taglist.vim
 
@@ -1212,9 +1213,6 @@ endfunc
 
 " Test for the 'Tags' base menu
 func Test_gui_base_menu()
-  if !has('gui_running')
-    return
-  endif
   %bw!
   let m = menu_info('Tags')
   call assert_equal({'modes': 'a', 'name': 'T&ags', 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-'], 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
@@ -1224,9 +1222,6 @@ endfunc
 
 " Test for the 'Tags' menu with the tags
 func Test_gui_menu_with_tags()
-  if !has('gui_running')
-    return
-  endif
   edit Xtest2.vim
   let m = menu_info('Tags')
   call assert_equal({'modes': 'a', 'name': 'T&ags', 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xtest2.vim', '-SEP2-', 'variable', 'function'], 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
@@ -1239,9 +1234,6 @@ endfunc
 
 " Test for jumping to a tag by selecting a menu item
 func Test_gui_menu_jump_to_tag()
-  if !has('gui_running')
-    return
-  endif
   edit Xtest2.vim
   emenu Tags.variable.0\.s:State
   call assert_equal(1, line('.'))
@@ -1252,9 +1244,6 @@ endfunc
 
 " Test for refreshing the menu with the tags when jumping between files
 func Test_gui_menu_refresh()
-  if !has('gui_running')
-    return
-  endif
   edit Xtest2.vim
   let m = menu_info('Tags')
   call assert_equal({'modes': 'a', 'name': 'T&ags', 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xtest2.vim', '-SEP2-', 'variable', 'function'], 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)

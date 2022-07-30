@@ -67,8 +67,7 @@ jobs:
         run: Expand-Archive -Path ctags.zip -DestinationPath $env:USERPROFILE
       - name: Run Tests
         run: |
-          $env:PATH = $env:PATH + ';' + $env:USERPROFILE
+          $env:PATH = $env:PATH + ';' + $env:USERPROFILE + ';' + $env:USERPROFILE + '\vim-stable'
           Get-ComputerInfo -Property Windows*
           cd test
-          set VIMPRG=gvim
           .\run_tests.cmd

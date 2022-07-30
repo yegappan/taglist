@@ -3,7 +3,7 @@
 REM Script to run the unit-tests for the taglist Vim plugin on MS-Windows
 
 SETLOCAL
-SET VIMPRG="gvim.exe"
+SET VIMPRG="vim.exe"
 REM SET VIMPRG="C:\Program Files (x86)\vim\vim82\vim.exe"
 REM SET VIMPRG="C:\Program Files (x86)\vim\vim73\vim.exe"
 SET VIM_CMD=%VIMPRG% -N -u NONE -U NONE -i NONE --not-a-term

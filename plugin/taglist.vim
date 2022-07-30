@@ -169,7 +169,7 @@ command! -nargs=0 -bar TlistMessages call taglist#Tlist_Debug_Show()
 nnoremap <silent> <plug>(TlistJumpTagUp)    :<C-u>call taglist#Tlist_Jump_Prev_Tag()<CR>
 nnoremap <silent> <plug>(TlistJumpTagDown)  :<C-u>call taglist#Tlist_Jump_Next_Tag()<CR>
 
-if g:Tlist_Show_Menu && has('gui_running')
+if g:Tlist_Show_Menu && (has('gui_running') || g:Tlist_Test)
   call taglist#Tlist_Menu_Init()
 endif
 

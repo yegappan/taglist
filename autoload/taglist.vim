@@ -1539,7 +1539,7 @@ endfunction
 " Tlist_Menu_Remove_File
 " Remove the tags displayed in the tags menu
 function! s:Tlist_Menu_Remove_File() abort
-  if !has('gui_running') || s:tlist_menu_empty
+  if (!has('gui_running') && !g:Tlist_Test) || s:tlist_menu_empty
     return
   endif
 
@@ -1963,7 +1963,7 @@ endfunction
 " Tlist_Menu_Update_File
 " Add the taglist menu
 function! s:Tlist_Menu_Update_File(clear_menu) abort
-  if !has('gui_running')
+  if !has('gui_running') && !g:Tlist_Test
     " Not running in GUI mode
     return
   endif
