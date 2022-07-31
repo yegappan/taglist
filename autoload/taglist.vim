@@ -8,7 +8,7 @@
 "            notice is copied with it. Like anything else that's free,
 "            taglist.vim is provided *as is* and comes with no warranty of any
 "            kind, either expressed or implied. In no event will the copyright
-"            holder be liable for any damamges resulting from the use of this
+"            holder be liable for any damages resulting from the use of this
 "            software.
 
 " Line continuation used here
@@ -989,7 +989,7 @@ function! s:Tlist_Remove_File(file_idx, user_request) abort
 endfunction
 
 " Tlist_Window_Goto_Window
-" Goto the taglist window
+" Go to the taglist window
 function! s:Tlist_Window_Goto_Window() abort
   let winnum = bufwinnr(s:TagList_title)
   if winnum != -1
@@ -1241,7 +1241,7 @@ function! s:Tlist_Window_Create() abort
   else
     if s:tlist_winsize_chgd == -1
       " Open a vertically split window. Increase the window size, if
-      " needed, to accomodate the new window
+      " needed, to accommodate the new window
       if g:Tlist_Inc_Winwidth && &columns < (80 + g:Tlist_WinWidth)
         " Save the original window position
         let s:tlist_pre_winx = getwinposx()
@@ -1772,26 +1772,23 @@ function! s:Tlist_Process_File(filename, ftype) abort
   let ctags_cmd = g:Tlist_Ctags_Cmd . ctags_args
   let ctags_cmd .= ' "' . a:filename . '"'
 
-  if &shellxquote ==# '"'
-    " Double-quotes within double-quotes will not work in the
-    " command-line.If the 'shellxquote' option is set to double-quotes,
-    " then escape the double-quotes in the ctags command-line.
-    let ctags_cmd = escape(ctags_cmd, '"')
-  endif
-
   if has('win32') && !has('win32unix') && (&shell =~# 'cmd.exe')
-    " Windows does not correctly deal with commands that have more than 1
-    " set of double quotes.  It will strip them all resulting in:
-    " 'C:\Program' is not recognized as an internal or external command
-    " operable program or batch file.  To work around this, place the
-    " command inside a batch file and call the batch file.
-    " Do this only on Win2K, WinXP and above.
+    " Windows does not correctly deal with commands that have more than one
+    " set of double quotes.  It will strip them all resulting in: 'C:\Program'
+    " is not recognized as an internal or external command operable program or
+    " batch file.  To work around this, place the command inside a batch file
+    " and call the batch file.  Do this only on MS-Windows.
     " Contributed by: David Fishburn.
     let taglist_tempfile = fnamemodify(tempname(), ':h') . '\taglist.cmd'
     call writefile([ctags_cmd], taglist_tempfile, 'b')
 
     call s:Tlist_Log_Msg('Cmd inside batch file: ' . ctags_cmd)
     let ctags_cmd = '"' . taglist_tempfile . '"'
+  elseif &shellxquote ==# '"'
+    " Double-quotes within double-quotes will not work in the
+    " command-line.  If the 'shellxquote' option is set to double-quotes,
+    " then escape the double-quotes in the ctags command-line.
+    let ctags_cmd = escape(ctags_cmd, '"')
   endif
 
   call s:Tlist_Log_Msg('Cmd: ' . ctags_cmd)
@@ -2028,7 +2025,7 @@ function! s:Tlist_Menu_Update_File(clear_menu) abort
   let cmd = ''
 
   " Determine whether the tag type name needs to be added to the menu
-  " If more than one tag type is present in the taglisting for a file,
+  " If more than one tag type is present in the taglisting of a file,
   " then the tag type name needs to be present
   let add_ttype_name = -1
   for ttype in keys(finfo.tagtypes)
@@ -2152,7 +2149,7 @@ function! s:Tlist_Window_Refresh_File(filename, ftype) abort
 
   let s:files[fidx].visible = v:true
 
-  " Goto the line where this file should be placed
+  " Go to the line where this file should be placed
   if g:Tlist_Compact_Format
     call cursor(s:files[fidx].start, 1)
   else
@@ -2215,7 +2212,7 @@ function! s:Tlist_Window_Refresh_File(filename, ftype) abort
 
   call s:Tlist_Create_Folds_For_File(s:files[fidx])
 
-  " Goto the starting line for this file,
+  " Go to the starting line for this file,
   call cursor(s:files[fidx].start, 1)
 
   " Mark the buffer as not modifiable
@@ -2504,7 +2501,7 @@ function! taglist#Tlist_Window_Close() abort
       close
     endif
   else
-    " Goto the taglist window, close it and then come back to the
+    " Go to the taglist window, close it and then come back to the
     " original window
     let curbufnr = bufnr('%')
     exe winnum . 'wincmd w'
@@ -2621,7 +2618,7 @@ endfunction
 " center = 1, move the tag line to the center of the taglist window
 function! taglist#Tlist_Window_Highlight_Tag(filename, cur_lnum, cntx, center) abort
   " Highlight the current tag only if the user configured the
-  " taglist plugin to do so or if the user explictly invoked the
+  " taglist plugin to do so or if the user explicitly invoked the
   " command to highlight the current tag.
   if !g:Tlist_Auto_Highlight_Tag && a:cntx == 1
     return
@@ -3571,7 +3568,8 @@ function! taglist#Tlist_Jump_Prev_Tag() abort
     return
   endif
 
-  " Jump to top of current tag if below, update hi, dont middle screen
+  " Jump to the top of the current tag if below, update hi, don't middle
+  " screen
   let clnum = s:Tlist_Get_Tag_Linenum(finfo.tags[tidx])
   if clnum < lnum
     call cursor(clnum, 1)
@@ -3627,7 +3625,7 @@ function! taglist#Tlist_Jump_Next_Tag() abort
     return
   endif
 
-  " No tag after, jump to bottom, update hi, dont middle scrren
+  " No tag after, jump to bottom, update hi, don't middle screen
   let ntidx = tidx + 1
   if ntidx > finfo.tag_count
     let llnum = line('$')

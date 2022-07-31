@@ -1,8 +1,8 @@
 *taglist.txt*	Plugin for browsing source code
 
 Author: Yegappan Lakshmanan  (yegappan AT yahoo DOT com)
-For Vim version 7.4 and above
-Last change: 2022 July 29
+For Vim version 7.4.1304 and above
+Last change: 2022 July 31
 
 1. Overview 					|taglist-intro|
 2. Taglist on the internet			|taglist-internet|
@@ -53,8 +53,9 @@ programming languages. The "Tag List" plugin provides the following features:
     * The list of tags and files in the taglist can be saved and
       restored across Vim sessions.
     * Provides commands to get the name and prototype of the current tag.
+    * Supports both Vim and Neovim.
     * Runs in both console/terminal and GUI versions of Vim.
-    * Can be used in both Unix and MS-Windows systems.
+    * Can be used in Linux/Unix, MacOS and MS-Windows systems.
 
 ==============================================================================
 						*taglist-internet*
@@ -74,7 +75,7 @@ The home page of the taglist plugin is at:
 
 The taglist plugin requires the following:
 
-    * Vim version 7.4 and above
+    * Vim version 7.4.1304 and above
     * Universal Ctags or Exuberant Ctags
 
 The taglist plugin will work on all the platforms where the Universal ctags or
@@ -1311,9 +1312,9 @@ are generated for the flags b, c and l respectively.
 
 Q. The taglist plugin doesn't work. The taglist window is empty and the tags
    defined in a file are not displayed. 
-A. Are you using Vim version 7.4 and above? The taglist plugin relies on the
-   features supported by Vim version 7.4 and above. You can use the following
-   command to get the Vim version:
+A. Are you using Vim version 7.4.1304 and above? The taglist plugin relies on
+   the features supported by Vim version 7.4.1304 and above. You can use the
+   following command to get the Vim version:
 >
 	$ vim --version
 <
@@ -1485,7 +1486,7 @@ Permission is hereby granted to use and distribute the taglist plugin, with or
 without modifications, provided that this copyright notice is copied with it.
 Like anything else that's free, taglist.vim is provided *as is* and comes with
 no warranty of any kind, either expressed or implied. In no event will the
-copyright holder be liable for any damamges resulting from the use of this
+copyright holder be liable for any damages resulting from the use of this
 software.
 
 ==============================================================================

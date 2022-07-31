@@ -53,8 +53,8 @@
 "    window. You can use the ":help taglist" command to get more
 "    information about using the taglist plugin.
 
-" Need atleast Vim version 7.4 and above.
-if v:version < 704 || exists('g:loaded_taglist')
+" Need atleast Vim version 7.4.1304 and above.
+if v:version < 704 || !has('patch-7.4.1304') || exists('g:loaded_taglist')
   finish
 endif
 
