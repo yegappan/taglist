@@ -1797,7 +1797,7 @@ function! s:Tlist_Process_File(filename, ftype) abort
   call s:Tlist_Log_Msg('Cmd: ' . ctags_cmd)
 
   " Run ctags and get the tag list
-  let cmd_output = systemlist(ctags_cmd)
+  let cmd_output = system(ctags_cmd)
 
   if exists('taglist_tempfile')
     " Delete the temporary cmd file created on MS-Windows
@@ -1807,8 +1807,8 @@ function! s:Tlist_Process_File(filename, ftype) abort
   " Handle errors
   if v:shell_error
     call s:Tlist_Warning_Msg('Taglist: Failed to generate tags for ' . a:filename)
-    if !empty(cmd_output)
-      call s:Tlist_Warning_Msg(string(cmd_output))
+    if cmd_output !=# ''
+      call s:Tlist_Warning_Msg(cmd_output)
     endif
     return fidx
   endif
@@ -1817,7 +1817,7 @@ function! s:Tlist_Process_File(filename, ftype) abort
   let finfo.mtime = getftime(a:filename)
 
   " No tags for current file
-  if empty(cmd_output)
+  if cmd_output ==# ''
     call s:Tlist_Log_Msg('No tags defined in ' . a:filename)
     return fidx
   endif
@@ -1825,7 +1825,7 @@ function! s:Tlist_Process_File(filename, ftype) abort
   call s:Tlist_Log_Msg('Generated tags information for ' . a:filename)
 
   " Process the ctags output one line at a time.
-  for l in cmd_output
+  for l in split(cmd_output, "\n")
     call s:Tlist_Parse_Tagline(a:ftype, finfo, l)
   endfor
 

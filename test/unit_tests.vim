@@ -1369,14 +1369,17 @@ func Test_tlist_debug()
   call assert_true(len(readfile('debug.log')) > 10)
   call delete('debug.log')
 
-  " try to use a non-writable log file
-  redir => info
-    TlistDebug /a/b/c/d/debug.log
-  redir END
-  call assert_equal('Taglist: Failed to create /a/b/c/d/debug.log',
-	\ split(info, "\n")[0])
-  TlistUndebug
+  " try to use a non-writable log file.  Run this test only on Unix-like
+  " systems as the path is different on MS-Windows.
+  if has('unix')
+    redir => info
+      TlistDebug /a/b/c/d/debug.log
+    redir END
+    call assert_equal('Taglist: Failed to create /a/b/c/d/debug.log',
+	  \ split(info, "\n")[0])
+  endif
 
+  TlistUndebug
   %bw!
 endfunc
 

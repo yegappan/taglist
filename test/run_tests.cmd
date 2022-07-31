@@ -20,7 +20,7 @@ type test.log
 
 findstr /I FAIL test.log > nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    echo ERROR: Some test(s) failed.
+    echo ERROR: Some tests failed.
     exit /b 1
 )
 if %ERRORLEVEL% NEQ 0 echo SUCCESS: All the tests passed.
