@@ -8,15 +8,23 @@ REM SET VIMPRG="C:\Program Files (x86)\vim\vim82\vim.exe"
 REM SET VIMPRG="C:\Program Files (x86)\vim\vim73\vim.exe"
 SET VIM_CMD=%VIMPRG% -N -u NONE -U NONE -i NONE --not-a-term
 
-%VIM_CMD% -S unit_tests.vim
+if exist "test.log" del test.log
 
-IF NOT EXIST test.log (
-    echo ERROR: Test results file 'test.log' is not found
+%VIM_CMD% -S unit_tests.vim
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Vim encountered some error when running the tests.
     exit /b 1
 )
 
-echo Taglist unit test results
+IF NOT EXIST test.log (
+    echo ERROR: Test results file 'test.log' is not found.
+    exit /b 1
+)
+
+echo Taglist unit test results:
+echo =========================
 type test.log
+echo(
 
 findstr /I FAIL test.log > nul 2>&1
 if %ERRORLEVEL% EQU 0 (

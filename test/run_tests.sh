@@ -12,10 +12,14 @@ fi
 VIMPRG=${VIMPRG:=/usr/bin/vim}
 VIM_CMD="$VIMPRG ${GUI_FLAGS} -N -u NONE -U NONE -i NONE --noplugin"
 
-$VIM_CMD -S unit_tests.vim
+rm -f test.log
 
-echo "Taglist unit test results:"
-echo
+$VIM_CMD -S unit_tests.vim
+if [ $? -ne 0 ]
+then
+  echo ERROR: Vim encountered some error when running the tests.
+  exit 1
+fi
 
 if [ ! -f test.log ]
 then
@@ -23,9 +27,13 @@ then
   exit 1
 fi
 
-cat test.log
-
+echo "Taglist unit test results:"
+echo "========================="
 echo
+
+cat test.log
+echo
+
 grep FAIL test.log > /dev/null 2>&1
 if [ $? -eq 0 ]
 then
