@@ -182,6 +182,11 @@ func Test_current_tag_show()
   redir END
   let l = split(l, "\n")
   call assert_equal([], l)
+  redir => l
+     TlistShowPrototype Xtest2.c
+  redir END
+  let l = split(l, "\n")
+  call assert_equal(['Usage: Tlist_Get_Tag_Prototype_By_Line <filename> <line_number>'], l)
   TlistClose
   bw!
 endfunc
@@ -772,11 +777,11 @@ func Test_tlist_session()
   edit Xtest2.vim
   TlistSessionSave Xsession.vim
   %bw!
-  Tlist
   TlistSessionLoad Xsession.vim
   let l = Tlist_Get_Filenames()
   call assert_match('Xtest1.c$', l[0])
   call assert_match('Xtest2.vim$', l[1])
+  Tlist
   1wincmd w
   call cursor(5, 1)
   call feedkeys("\<CR>", 'xt')
@@ -791,6 +796,38 @@ func Test_tlist_session()
   call delete('Xsession.vim')
   TlistClose
   %bw!
+
+  " Error cases
+  redir => info
+    TlistSessionSave
+  redir END
+  call assert_equal('Usage: TlistSessionSave <filename>', split(info, "\n")[0])
+
+  redir => info
+    TlistSessionSave Xsess.log
+  redir END
+  call assert_equal('Warning: Taglist is empty. Nothing to save.',
+	\ split(info, "\n")[0])
+
+  redir => info
+    TlistSessionLoad
+  redir END
+  call assert_equal('Usage: TlistSessionLoad <filename>', split(info, "\n")[0])
+
+  redir => info
+    TlistSessionLoad Abcd
+  redir END
+  call assert_equal('Taglist: Error - Unable to open file Abcd',
+	\ split(info, "\n")[0])
+
+  call writefile(['test'], 'Xdummy')
+  redir => info
+    TlistSessionLoad Xdummy
+  redir END
+  call assert_equal('Taglist: Error - Corrupted session file Xdummy',
+	\ split(info, "\n")[0])
+
+  call delete('Xdummy')
 endfunc
 
 " Test for TlistLock and TlistUnlock

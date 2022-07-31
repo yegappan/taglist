@@ -3967,7 +3967,6 @@ function! s:Tlist_Window_Open_File_Fold(acmd_bufnr) abort
   " Make sure the taglist window is present
   let winnum = bufwinnr(s:TagList_title)
   if winnum == -1
-    call s:Tlist_Warning_Msg('Taglist: Error - Taglist window is not open')
     return
   endif
 
