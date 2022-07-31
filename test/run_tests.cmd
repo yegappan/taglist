@@ -10,9 +10,18 @@ SET VIM_CMD=%VIMPRG% -N -u NONE -U NONE -i NONE --not-a-term
 
 %VIM_CMD% -S unit_tests.vim
 
-echo Taglist unit test results
-type results.txt
+IF NOT EXIST test.log (
+    echo ERROR: Test results file 'test.log' is not found
+    exit /b 1
+)
 
-findstr /I FAIL results.txt > nul 2>&1
-if %ERRORLEVEL% EQU 0 echo ERROR: Some test failed.
+echo Taglist unit test results
+type test.log
+
+findstr /I FAIL test.log > nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo ERROR: Some test(s) failed.
+    exit /b 1
+)
 if %ERRORLEVEL% NEQ 0 echo SUCCESS: All the tests passed.
+exit /b 0
