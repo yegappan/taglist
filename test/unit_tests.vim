@@ -9,6 +9,8 @@ syntax on
 filetype on
 filetype plugin on
 set nohidden
+" for popup menu testing, set 'mousemodel'
+set mousemodel=popup
 
 " Set the $TAGLIST_PROFILE environment variable to profile the taglist plugin
 let do_profile = v:false
@@ -1248,16 +1250,29 @@ func Test_Tlist_Auto_Update()
   let g:Tlist_Compact_Format=0
 endfunc
 
-" Test for the 'Tags' base menu
+" Test for the 'Tags' base menu and the popup menu
 func Test_gui_base_menu()
   if !exists('*menu_info')
     return
   endif
   %bw!
   let m = menu_info('Tags')
-  call assert_equal({'modes': 'a', 'name': 'T&ags', 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-'], 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-'],
+	\ 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
   let m = menu_info('Tags.Sort menu by')
-  call assert_equal({'modes': 'a', 'name': 'Sort menu by', 'submenus': ['Name', 'Order'], 'shortcut': '', 'priority': 500, 'display': 'Sort menu by'}, m)
+  call assert_equal({'modes': 'a', 'name': 'Sort menu by',
+	\ 'submenus': ['Name', 'Order'], 'shortcut': '', 'priority': 500,
+	\ 'display': 'Sort menu by'}, m)
+
+  " popup menu
+  let m = menu_info('PopUp')
+  call assert_equal({'modes': 'a', 'name': 'PopUp', 'submenus': ['Tags'],
+	\ 'shortcut': '', 'priority': 500, 'display': 'PopUp'}, m)
+  let m = menu_info('PopUp.Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-'],
+	\ 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
 endfunc
 
 " Test for the 'Tags' menu with the tags
@@ -1267,11 +1282,33 @@ func Test_gui_menu_with_tags()
   endif
   edit Xtest2.vim
   let m = menu_info('Tags')
-  call assert_equal({'modes': 'a', 'name': 'T&ags', 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xtest2.vim', '-SEP2-', 'variable', 'function'], 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xtest2.vim',
+	\ '-SEP2-', 'variable', 'function'], 'shortcut': 'a', 'priority': 500,
+	\ 'display': 'Tags'}, m)
   let m = menu_info('Tags.variable')
-  call assert_equal({'modes': 'a', 'name': 'variable', 'submenus': ['0.s:State'], 'shortcut': '', 'priority': 500, 'display': 'variable'}, m)
+  call assert_equal({'modes': 'a', 'name': 'variable',
+	\ 'submenus': ['0.s:State'], 'shortcut': '', 'priority': 500,
+	\ 'display': 'variable'}, m)
   let m = menu_info('Tags.function')
-  call assert_equal({'modes': 'a', 'name': 'function', 'submenus': ['0.Func1', '1.Func2'], 'shortcut': '', 'priority': 500, 'display': 'function'}, m)
+  call assert_equal({'modes': 'a', 'name': 'function',
+	\ 'submenus': ['0.Func1', '1.Func2'], 'shortcut': '', 'priority': 500,
+	\ 'display': 'function'}, m)
+
+  " popup menu
+  let m = menu_info('PopUp.Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-',
+	\ 'variable', 'function'], 'shortcut': 'a', 'priority': 500,
+	\ 'display': 'Tags'}, m)
+  let m = menu_info('PopUp.Tags.variable')
+  call assert_equal({'modes': 'a', 'name': 'variable',
+	\ 'submenus': ['0.s:State'], 'shortcut': '', 'priority': 500,
+	\ 'display': 'variable'}, m)
+  let m = menu_info('PopUp.Tags.function')
+  call assert_equal({'modes': 'a', 'name': 'function',
+	\ 'submenus': ['0.Func1', '1.Func2'], 'shortcut': '', 'priority': 500,
+	\ 'display': 'function'}, m)
   %bw!
 endfunc
 
@@ -1282,24 +1319,136 @@ func Test_gui_menu_jump_to_tag()
   call assert_equal(1, line('.'))
   emenu Tags.function.1\.Func2
   call assert_equal(7, line('.'))
+
+  " popup menu
+  emenu PopUp.Tags.variable.0\.s:State
+  call assert_equal(1, line('.'))
+  emenu PopUp.Tags.function.1\.Func2
+  call assert_equal(7, line('.'))
   %bw!
 endfunc
 
 " Test for refreshing the menu with the tags when jumping between files
-func Test_gui_menu_refresh()
+func Test_gui_menu_edit_multiple_files()
   if !exists('*menu_info')
     return
   endif
   edit Xtest2.vim
   let m = menu_info('Tags')
-  call assert_equal({'modes': 'a', 'name': 'T&ags', 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xtest2.vim', '-SEP2-', 'variable', 'function'], 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xtest2.vim',
+	\ '-SEP2-', 'variable', 'function'], 'shortcut': 'a', 'priority': 500,
+	\ 'display': 'Tags'}, m)
+  let m = menu_info('PopUp.Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-',
+	\ 'variable', 'function'], 'shortcut': 'a', 'priority': 500,
+	\ 'display': 'Tags'}, m)
   enew
   let m = menu_info('Tags')
-  call assert_equal({'modes': 'a', 'name': 'T&ags', 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-'], 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-'],
+	\ 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+  let m = menu_info('PopUp.Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-'],
+	\ 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
   edit #
   let m = menu_info('Tags')
-  call assert_equal({'modes': 'a', 'name': 'T&ags', 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xtest2.vim', '-SEP2-', 'variable', 'function'], 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xtest2.vim',
+	\ '-SEP2-', 'variable', 'function'], 'shortcut': 'a', 'priority': 500,
+	\ 'display': 'Tags'}, m)
+  let m = menu_info('PopUp.Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-',
+	\ 'variable', 'function'], 'shortcut': 'a', 'priority': 500,
+	\ 'display': 'Tags'}, m)
+  bw Xtest2.vim
+  let m = menu_info('Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-'],
+	\ 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+  let m = menu_info('PopUp.Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-'],
+	\ 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
   %bw!
+endfunc
+
+" Test for the refresh menu item
+func Test_gui_menu_refresh()
+  if !exists('*menu_info')
+    return
+  endif
+  call writefile([], 'Xfile3.py')
+  edit Xfile3.py
+  let m = menu_info('Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xfile3.py',
+	\ '-SEP2-'], 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+  let m = menu_info('PopUp.Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-'],
+	\ 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+  let l = [
+	\  'class Car():',
+	\  '  def __init__(self):',
+	\  '    pass'
+	\ ]
+  call setline(1, l)
+  write
+  emenu Tags.Refresh\ menu
+  let m = menu_info('Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xfile3.py',
+	\ '-SEP2-', 'class', 'member'], 'shortcut': 'a', 'priority': 500,
+	\ 'display': 'Tags'}, m)
+  let m = menu_info('PopUp.Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'class',
+	\ 'member'], 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+  %delete _
+  write
+  emenu Tags.Refresh\ menu
+  let m = menu_info('Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xfile3.py',
+	\ '-SEP2-'], 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+  let m = menu_info('PopUp.Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-'],
+	\ 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+  %bw!
+  call delete('Xfile3.py')
+endfunc
+
+" Test for the 'Tlist_Max_Submenu_Items' option
+func Test_gui_menu_max_submenu_items()
+  if !exists('*menu_info')
+    return
+  endif
+  let g:Tlist_Max_Submenu_Items=2
+  let l = [
+	\ '#define PI 3.14',
+	\ 'void ASomeLongFunctionName1() { }',
+	\ 'void BSomeLongFunctionName2() { }',
+	\ 'void CSomeLongFunctionName3() { }',
+	\ ]
+  call writefile(l, 'Xfile4.c')
+  edit Xfile4.c
+  let m = menu_info('Tags.function')
+  call assert_equal({'modes': 'a', 'name': 'function',
+	\ 'submenus': ['ASomeLongF...BSomeLongF', 'CSomeLongF...CSomeLongF'],
+	\ 'shortcut': '', 'priority': 500, 'display': 'function'}, m)
+  let m = menu_info('PopUp.Tags.function')
+  call assert_equal({'modes': 'a', 'name': 'function',
+	\ 'submenus': ['ASomeLongF...BSomeLongF', 'CSomeLongF...CSomeLongF'],
+	\ 'shortcut': '', 'priority': 500, 'display': 'function'}, m)
+
+  %bw!
+  let g:Tlist_Max_Submenu_Items=15
+  call delete('Xfile4.c')
 endfunc
 
 " Test for jumping to a tag by double clicking the tag name
@@ -1526,10 +1675,96 @@ func Test_custom_highlight_groups()
   hi clear MyTagListTagScope
 endfunc
 
+" Test for jumping to and highlighting tags when the tags are sorted by name
+" or by order.
+func Test_tag_search_order()
+  let l = [
+	\ '',
+	\ 'void Zfunc()',
+	\ '{',
+	\ '}',
+	\ 'void Afunc()',
+	\ '{',
+	\ '}',
+	\ 'void Mfunc()',
+	\ '{',
+	\ '}',
+	\ 'void Nfunc()',
+	\ '{',
+	\ '}',
+	\ 'void Bfunc()',
+	\ '{',
+	\ '}']
+  call writefile(l, 'Xfile4.c')
+  edit Xfile4.c
+  Tlist
+
+  " try the different sort orders
+  for sorttype in ['name', 'order']
+    let g:Tlist_Sort_Type = sorttype
+    bwipe Xfile4.c
+    edit Xfile4.c
+    let result = []
+    " get the current tag
+    for lnum in [1, 3, 6, 9, 12, 15]
+      call cursor(lnum, 1)
+      redir => l
+      TlistShowTag
+      redir END
+      call add(result, split(l, "\n"))
+    endfor
+    call assert_equal([[], ['Zfunc'], ['Afunc'], ['Mfunc'], ['Nfunc'],
+	  \ ['Bfunc']], result)
+
+    " jump to a tag
+    let result = []
+    for lnum in [5, 6, 7, 8, 9]
+      1wincmd w
+      call cursor(lnum, 1)
+      call feedkeys("\<CR>", 'xt')
+      call assert_equal(2, winnr())
+      call add(result, line('.'))
+    endfor
+    if sorttype == 'name'
+      let expected = [5, 14, 8, 11, 2]
+    else
+      let expected = [2, 5, 8, 11, 14]
+    endif
+    call assert_equal(expected, result)
+  endfor
+
+  TlistClose
+  %bw!
+  call delete('Xfile4.c')
+endfunc
+
+" Test for the 'Tlist_Exit_OnlyWindow' option
+func Test_Tlist_Exit_OnlyWindow()
+  let l = [
+	\
+	\ "autocmd VimLeave * call writefile(['Leaving vim'], 'Xleave.txt', 'a')",
+	\ 'let g:Tlist_Exit_OnlyWindow=1',
+	\ 'set rtp+=..',
+	\ 'source ../plugin/taglist.vim',
+	\ 'Tlist',
+	\ 'tabnew',
+	\ 'Tlist',
+	\ "call writefile(['tabs #' .. tabpagenr('$')], 'Xleave.txt', 'a')",
+	\ 'close',
+	\ "call writefile(['tabs #' .. tabpagenr('$')], 'Xleave.txt', 'a')",
+	\ 'close'
+	\ ]
+  call writefile(l, 'Xscript.vim')
+  call delete('Xleave.txt')
+  exe "silent !" .. $VIMCMD .. " -S Xscript.vim"
+  call assert_equal(['tabs #2', 'tabs #1', 'Leaving vim'],
+	\ readfile('Xleave.txt'))
+  call delete('Xscript.vim')
+  call delete('Xleave.txt')
+endfunc
+
 " TODO:
-" 1. Test for configuring the highlight groups TagListTagName,
-"    TagListTagScope, TagListTitle, TagListComment and TagListFileName
-" 2. Test for 'Tlist_Process_File_Always'
+" 1. Test for 'Tlist_Process_File_Always'
 "
 
 " create files used by the tests

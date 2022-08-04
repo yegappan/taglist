@@ -10,11 +10,12 @@ else
 fi
 
 VIMPRG=${VIMPRG:=/usr/bin/vim}
-VIM_CMD="$VIMPRG ${GUI_FLAGS} -N -u NONE -U NONE -i NONE --noplugin"
+VIMCMD="$VIMPRG ${GUI_FLAGS} -N -u NONE -U NONE -i NONE --noplugin"
+export VIMCMD
 
 rm -f test.log
 
-$VIM_CMD -S unit_tests.vim
+$VIMCMD -S unit_tests.vim
 if [ $? -ne 0 ]
 then
   echo ERROR: Vim encountered some error when running the tests.

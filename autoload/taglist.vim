@@ -2004,6 +2004,7 @@ function! s:Tlist_Menu_Update_File(clear_menu) abort
   if fname !=# ''
     exe 'anoremenu T&ags.' . fname . ' <Nop>'
     anoremenu T&ags.-SEP2-           :
+    let s:tlist_menu_empty = v:false
   endif
 
   let finfo = s:files[fidx]
