@@ -10,11 +10,16 @@ jobs:
           sudo apt update && sudo apt install -y ctags
       - name: Checkout Code
         uses: actions/checkout@v2
+      - name: Setup Vim
+        uses: rhysd/action-setup-vim@v1
+        id: vim
+        with:
+          version: v9.0.0000
       - name: Run Tests
         run: |
           uname -a
           export TAGLIST_PROFILE=1
-          export VIMPRG=vim
+          export VIMPRG=${{ steps.vim.outputs.executable }}
           $VIMPRG --version
           cd ./test
           ./run_tests.sh
