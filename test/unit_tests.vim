@@ -132,65 +132,109 @@ endfunc
 func Test_current_tag_show()
   edit Xtest1.c
   Tlist
+
   call cursor(9, 1)
   redir => l
      TlistShowTag
   redir END
   let l = split(l, "\n")
   call assert_equal(['abc'], l)
+
   redir => l
      TlistShowPrototype
   redir END
   let l = split(l, "\n")
   call assert_equal(['void abc()'], l)
+
   call cursor(1, 1)
   redir => l
      TlistShowTag
   redir END
   let l = split(l, "\n")
   call assert_equal([], l)
+
   redir => l
      TlistShowPrototype
   redir END
   let l = split(l, "\n")
   call assert_equal([], l)
+
   redir => l
      TlistShowTag Xtest1.c 9
   redir END
   let l = split(l, "\n")
   call assert_equal(['abc'], l)
+
   redir => l
      TlistShowTag Xtest1.c 1
   redir END
   let l = split(l, "\n")
   call assert_equal([], l)
+
   redir => l
      TlistShowTag Xtest2.c 10
   redir END
   let l = split(l, "\n")
   call assert_equal([], l)
+
   redir => l
      TlistShowPrototype Xtest1.c 9
   redir END
   let l = split(l, "\n")
   call assert_equal(['void abc()'], l)
+
   redir => l
      TlistShowPrototype Xtest1.c 1
   redir END
   let l = split(l, "\n")
   call assert_equal([], l)
+
   redir => l
      TlistShowPrototype Xtest2.c 10
   redir END
+  call assert_equal([], split(l, "\n"))
+
+  " file with no tags
+  call writefile([], 'Xfile3.py')
+  edit Xfile3.py
+  redir => l
+     TlistShowTag
+  redir END
+  call assert_equal([], split(l, "\n"))
+  redir => l
+     TlistShowPrototype
+  redir END
+  call assert_equal([], split(l, "\n"))
+
+  " tag with a scope
+  let l = [
+	\  'class Car():',
+	\  '  def __init__(self):',
+	\  '    pass'
+	\ ]
+  call setline(1, l)
+  write
+  TlistUpdate
+  call cursor(3, 1)
+  redir => l
+     TlistShowTag
+  redir END
+  call assert_equal(['__init__ [Car]'], split(l, "\n"))
+
+  " invalid number of arguments
+  redir => l
+     TlistShowTag Xtest2.c
+  redir END
   let l = split(l, "\n")
-  call assert_equal([], l)
+  call assert_equal(['Usage: Tlist_Get_Tagname_By_Line <filename> <line_number>'], l)
+
   redir => l
      TlistShowPrototype Xtest2.c
   redir END
-  let l = split(l, "\n")
-  call assert_equal(['Usage: Tlist_Get_Tag_Prototype_By_Line <filename> <line_number>'], l)
+  call assert_equal(['Usage: Tlist_Get_Tag_Prototype_By_Line <filename> <line_number>'], split(l, "\n"))
   TlistClose
   bw!
+  call delete('Xfile3.py')
 endfunc
 
 " Test for showing information about current tag in the taglist window
@@ -354,6 +398,20 @@ func Test_tlist_jump_next_prev_tag()
   call assert_equal(3, line('.'))
   normal [t
   call assert_equal(1, line('.'))
+  call cursor(2, 1)
+  normal [t
+  call assert_equal(1, line('.'))
+
+  " if there are no tags in a file, should jump to the start and end of the
+  " file.
+  enew
+  call setline(1, ['one', 'two', 'three'])
+  call cursor(2, 1)
+  normal [t
+  call assert_equal(1, line('.'))
+  call cursor(2, 1)
+  normal ]t
+  call assert_equal(3, line('.'))
 
   nunmap [t
   nunmap ]t
@@ -768,6 +826,29 @@ func Test_tlist_window_open_file()
   normal t
   call assert_equal([2, 1, 3], [tabpagenr(), winnr(), line('.')])
 
+  " jumping to a file in a new tabpage
+  1tabnext
+  tabonly
+  1wincmd w
+  call cursor(6, 1)
+  call feedkeys("\<C-t>", "xt")
+  call assert_equal([2, 2], [tabpagenr('$'), tabpagenr()])
+  call assert_equal(2, winnr())
+
+  TlistClose
+  %bw!
+endfunc
+
+" Test for opening a file from the taglist window when only taglist window is
+" present
+func Test_tlist_window_only_open_file()
+  edit Xtest1.c
+  call cursor(1, 1)
+  TlistOpen
+  only
+  call cursor(5, 1)
+  call feedkeys("\<CR>", 'xt')
+  call assert_equal([2, 'Xtest1.c'], [winnr(), bufname('')])
   TlistClose
   %bw!
 endfunc
@@ -879,6 +960,10 @@ func Test_add_files()
   TlistClose
   %bw!
   call assert_equal([], Tlist_Get_Filenames())
+  redir => l
+    TlistAddFiles a1b2c3*
+  redir END
+  call assert_equal('Error: No matching files are found', split(l, "\n")[0])
 endfunc
 
 " Test for the :TlistAddFilesRecursive command
@@ -910,6 +995,10 @@ func Test_add_files_recursive()
   %bw!
   call assert_equal([], Tlist_Get_Filenames())
   call delete('Xdir', 'rf')
+  redir => l
+    TlistAddFilesRecursive Xdir
+  redir END
+  call assert_match('Error: .*Xdir is not a directory', split(l, "\n")[0])
 endfunc
 
 " Test for :TlistToggle
@@ -1450,6 +1539,53 @@ func Test_gui_menu_max_submenu_items()
   let g:Tlist_Max_Submenu_Items=15
   call delete('Xfile4.c')
 endfunc
+
+" Test for changing the tag sort order using the menu
+func Test_gui_menu_change_sort()
+  if !exists('*menu_info')
+    return
+  endif
+  edit Xtest1.c
+  let m = menu_info('Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xtest1.c',
+	\ '-SEP2-', '0.xyz', '1.abc'],
+	\ 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+  let m = menu_info('PopUp.Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-',
+	\ '0.xyz', '1.abc'],
+	\ 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+
+  " sort the tags alphabetically
+  emenu Tags.Sort\ menu\ by.Name
+  let m = menu_info('Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xtest1.c',
+	\ '-SEP2-', '0.abc', '1.xyz'],
+	\ 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+  let m = menu_info('PopUp.Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-',
+	\ '0.abc', '1.xyz'],
+	\ 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+
+  " sort the tags by chronological order.
+  emenu Tags.Sort\ menu\ by.Order
+  let m = menu_info('Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-', 'Xtest1.c',
+	\ '-SEP2-', '0.xyz', '1.abc'],
+	\ 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+  let m = menu_info('PopUp.Tags')
+  call assert_equal({'modes': 'a', 'name': 'T&ags',
+	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-',
+	\ '0.xyz', '1.abc'],
+	\ 'shortcut': 'a', 'priority': 500, 'display': 'Tags'}, m)
+
+  %bw!
+endfunc
+
 
 " Test for jumping to a tag by double clicking the tag name
 func Test_gui_double_click()

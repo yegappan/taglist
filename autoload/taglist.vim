@@ -3601,8 +3601,7 @@ function! taglist#Tlist_Jump_Next_Tag() abort
   " File was not supported probably, just jump to bottom
   " No tags in the file, jump to bottom
   if fidx == -1 || s:files[fidx].tag_count == 0
-    let llnum = line('$')
-    call cursor(llnum, 1)
+    call cursor(line('$'), 1)
     return
   endif
   let finfo = s:files[fidx]
@@ -3629,8 +3628,7 @@ function! taglist#Tlist_Jump_Next_Tag() abort
   " No tag after, jump to bottom, update hi, don't middle screen
   let ntidx = tidx + 1
   if ntidx > finfo.tag_count
-    let llnum = line('$')
-    call cursor(llnum, 1)
+    call cursor(line('$'), 1)
     call s:Tlist_Jump_Highlight_Tag(finfo, tidx)
     return
   endif
@@ -3653,10 +3651,6 @@ function! taglist#Tlist_Get_Tag_Prototype_By_Line(...) abort
     let linenr = line('.')
   elseif a:0 == 2
     " Filename and line number are specified
-    if type(a:1) != 1 || type(a:2) != 1
-      " Invalid file name or line number
-      return ''
-    endif
     let filename = a:1
     let linenr = str2nr(a:2)
   else
@@ -3705,10 +3699,6 @@ function! taglist#Tlist_Get_Tagname_By_Line(...) abort
     let linenr = line('.')
   elseif a:0 == 2
     " Filename and line number are specified
-    if type(a:1) != 1 || type(a:2) != 1
-      " Invalid file name or line number
-      return ''
-    endif
     let filename = a:1
     let linenr = str2nr(a:2)
   else
@@ -4009,7 +3999,7 @@ endfunction
 " Open the taglist window automatically on Vim startup.
 " Open the window only when files present in any of the Vim windows support
 " tags.
-function! s:Tlist_Window_Check_Auto_Open() abort
+function! taglist#Tlist_Window_Check_Auto_Open() abort
   let open_window = 0
 
   for w in getwininfo()
