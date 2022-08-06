@@ -1,7 +1,7 @@
 " File: taglist.vim
 " Author: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
 " Version: 6.0
-" Last Modified: July 27, 2022
+" Last Modified: Aug 5, 2022
 " Copyright: Copyright (C) 2002-2022 Yegappan Lakshmanan
 "            Permission is hereby granted to use and distribute this code,
 "            with or without modifications, provided that this copyright
@@ -726,7 +726,7 @@ function! s:Tlist_FileType_Init(ftype) abort
   let varname = 'g:tlist_' . a:ftype . '_settings'
   if exists(varname)
     " User specified ctags arguments
-    let settings = eval(varname) . ';'
+    let settings = eval(varname)
   else
     " Default ctags arguments
     if !has_key(s:tlist_lang_def, a:ftype)
@@ -734,7 +734,7 @@ function! s:Tlist_FileType_Init(ftype) abort
       " not supported
       return v:false
     endif
-    let settings = s:tlist_lang_def[a:ftype] . ';'
+    let settings = s:tlist_lang_def[a:ftype]
   endif
 
   let msg = 'Taglist: Invalid ctags option setting - ' . settings
@@ -746,27 +746,17 @@ function! s:Tlist_FileType_Init(ftype) abort
 
   " Extract the file type to pass to ctags. This may be different from the
   " file type detected by Vim
-  let pos = stridx(settings, ';')
-  if pos == -1
+  let l = split(settings, ';')
+  if len(l) < 2
     call s:Tlist_Warning_Msg(msg)
     return v:false
   endif
-  let ctags_ftype = strpart(settings, 0, pos)
-  if ctags_ftype ==# ''
-    call s:Tlist_Warning_Msg(msg)
-    return v:false
-  endif
+  let ctags_ftype = l[0]
+
   " Make sure a valid filetype is supplied. If the user didn't specify a
   " valid filetype, then the ctags option settings may be treated as the
   " filetype
-  if ctags_ftype =~# ':'
-    call s:Tlist_Warning_Msg(msg)
-    return v:false
-  endif
-
-  " Remove the file type from settings
-  let settings = strpart(settings, pos + 1)
-  if settings ==# ''
+  if ctags_ftype ==# '' || ctags_ftype =~# ':'
     call s:Tlist_Warning_Msg(msg)
     return v:false
   endif
@@ -774,43 +764,27 @@ function! s:Tlist_FileType_Init(ftype) abort
   " Process all the specified ctags flags. The format is
   " flag1:name1;flag2:name2;flag3:name3
   let ctags_flags = ''
-  let cnt = 0
   let tagtypes = {}
   let ordered_ttypes = []
-  while settings !=# ''
-    " Extract the flag
-    let pos = stridx(settings, ':')
-    if pos == -1
-      call s:Tlist_Warning_Msg(msg)
-      return v:false
-    endif
-    let flag = strpart(settings, 0, pos)
-    if flag ==# ''
-      call s:Tlist_Warning_Msg(msg)
-      return v:false
-    endif
-    " Remove the flag from settings
-    let settings = strpart(settings, pos + 1)
 
-    " Extract the tag type name
-    let pos = stridx(settings, ';')
-    if pos == -1
+  for setting in l[1:]
+    " Extract the flag and the tag type name
+    let t = split(setting, ':')
+    if len(t) != 2
       call s:Tlist_Warning_Msg(msg)
       return v:false
     endif
-    let name = strpart(settings, 0, pos)
-    if name ==# ''
-      call s:Tlist_Warning_Msg(msg)
-      return v:false
-    endif
-    let settings = strpart(settings, pos + 1)
 
-    let cnt += 1
+    let [flag, name] = t
+    if flag ==# '' || name ==# ''
+      call s:Tlist_Warning_Msg(msg)
+      return v:false
+    endif
 
     let tagtypes[flag] = {'fullname': name}
     call add(ordered_ttypes, flag)
     let ctags_flags .= flag
-  endwhile
+  endfor
 
   let s:ftypes[a:ftype] = {}
   let s:ftypes[a:ftype].ctags_args = '--language-force=' . ctags_ftype . ' ' .

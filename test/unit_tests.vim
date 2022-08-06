@@ -1727,49 +1727,49 @@ func Test_custom_filetype_settings()
   redir => l
     TlistUpdate
   redir END
-  call assert_equal('Taglist: Invalid ctags option setting - ;',
+  call assert_equal('Taglist: Invalid ctags option setting - ',
 	\ split(l, "\n")[0])
 
   let g:tlist_myft_settings='myft'
   redir => l
     TlistUpdate
   redir END
-  call assert_equal('Taglist: Invalid ctags option setting - myft;',
+  call assert_equal('Taglist: Invalid ctags option setting - myft',
 	\ split(l, "\n")[0])
 
   let g:tlist_myft_settings='myft:'
   redir => l
     TlistUpdate
   redir END
-  call assert_equal('Taglist: Invalid ctags option setting - myft:;',
+  call assert_equal('Taglist: Invalid ctags option setting - myft:',
 	\ split(l, "\n")[0])
 
   let g:tlist_myft_settings='myft:func'
   redir => l
     TlistUpdate
   redir END
-  call assert_equal('Taglist: Invalid ctags option setting - myft:func;',
+  call assert_equal('Taglist: Invalid ctags option setting - myft:func',
 	\ split(l, "\n")[0])
 
   let g:tlist_myft_settings='myft;func:'
   redir => l
     TlistUpdate
   redir END
-  call assert_equal('Taglist: Invalid ctags option setting - myft;func:;',
+  call assert_equal('Taglist: Invalid ctags option setting - myft;func:',
 	\ split(l, "\n")[0])
 
   let g:tlist_myft_settings='myft;:func'
   redir => l
     TlistUpdate
   redir END
-  call assert_equal('Taglist: Invalid ctags option setting - myft;:func;',
+  call assert_equal('Taglist: Invalid ctags option setting - myft;:func',
 	\ split(l, "\n")[0])
 
   let g:tlist_myft_settings='myft;:'
   redir => l
     TlistUpdate
   redir END
-  call assert_equal('Taglist: Invalid ctags option setting - myft;:;',
+  call assert_equal('Taglist: Invalid ctags option setting - myft;:',
 	\ split(l, "\n")[0])
 
   TlistClose
