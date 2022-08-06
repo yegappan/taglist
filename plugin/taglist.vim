@@ -1,57 +1,16 @@
 " File: taglist.vim
 " Author: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
-" Version: 6.0
-" Last Modified: Aug 5, 2022
+" Version: 5.0
+" Last Modified: Aug 6, 2022
+"
 " Copyright: Copyright (C) 2002-2022 Yegappan Lakshmanan
 "            Permission is hereby granted to use and distribute this code,
 "            with or without modifications, provided that this copyright
 "            notice is copied with it. Like anything else that's free,
 "            taglist.vim is provided *as is* and comes with no warranty of any
 "            kind, either expressed or implied. In no event will the copyright
-"            holder be liable for any damamges resulting from the use of this
+"            holder be liable for any damages resulting from the use of this
 "            software.
-"
-" The "Tag List" plugin is a source code browser plugin for Vim and provides
-" an overview of the structure of the programming language files and allows
-" you to efficiently browse through source code files for different
-" programming languages.
-"
-" The github page for this plugin is at
-"
-"       https://github.com/yegappan/taglist
-"
-" You can visit the taglist plugin home page for more information:
-"
-"       http://vim-taglist.sourceforge.net
-"
-" For more information about using this plugin, after installing the
-" taglist plugin, use the ":help taglist" command.
-"
-" Installation
-" ------------
-" 1. Download the taglist.zip file and unzip the files to the $HOME/.vim
-"    or the $HOME/vimfiles or the $VIM/vimfiles directory. This should
-"    unzip the following two files (the directory structure should be
-"    preserved):
-"
-"       plugin/taglist.vim - main taglist plugin file
-"       doc/taglist.txt    - documentation (help) file
-"
-"    Refer to the 'add-plugin', 'add-global-plugin' and 'runtimepath'
-"    Vim help pages for more details about installing Vim plugins.
-" 2. Change to the $HOME/.vim/doc or $HOME/vimfiles/doc or
-"    $VIM/vimfiles/doc directory, start Vim and run the ":helptags ."
-"    command to process the taglist help file.
-" 3. If the exuberant ctags utility is not present in your PATH, then set the
-"    Tlist_Ctags_Cmd variable to point to the location of the exuberant ctags
-"    utility (not to the directory) in the .vimrc file.
-" 4. If you are running a terminal/console version of Vim and the
-"    terminal doesn't support changing the window width then set the
-"    'Tlist_Inc_Winwidth' variable to 0 in the .vimrc file.
-" 5. Restart Vim.
-" 6. You can now use the ":TlistToggle" command to open/close the taglist
-"    window. You can use the ":help taglist" command to get more
-"    information about using the taglist plugin.
 
 " Need atleast Vim version 7.4.1304 and above.
 if v:version < 704 || !has('patch-7.4.1304') || exists('g:loaded_taglist')
@@ -67,68 +26,20 @@ if !exists('s:cpo_save')
 endif
 set cpo&vim
 
-" The taglist plugin requires the built-in Vim system() function. If this
-" function is not available, then don't load the plugin.
-if !exists('*system')
-  echomsg 'Taglist: Vim system() built-in function is not available. ' .
-        \ 'Plugin is not loaded.'
-  let loaded_taglist = 'no'
-  let &cpo = s:cpo_save
-  finish
-endif
-
-" Location of the exuberant ctags tool
-if !exists('g:Tlist_Ctags_Cmd')
-  if executable('exuberant-ctags')
-    " On Debian Linux, exuberant ctags is installed as exuberant-ctags
-    let g:Tlist_Ctags_Cmd = 'exuberant-ctags'
-  elseif executable('exctags')
-    " On Free-BSD, exuberant ctags is installed as exctags
-    let g:Tlist_Ctags_Cmd = 'exctags'
-  elseif executable('ctags')
-    let g:Tlist_Ctags_Cmd = 'ctags'
-  elseif executable('ctags.exe')
-    let g:Tlist_Ctags_Cmd = 'ctags.exe'
-  elseif executable('tags')
-    let g:Tlist_Ctags_Cmd = 'tags'
-  else
-    echomsg 'Taglist: Exuberant ctags (http://ctags.sf.net) ' .
-          \ 'not found in PATH. Plugin is not loaded.'
-    " Skip loading the plugin
-    let loaded_taglist = 'no'
-    let &cpo = s:cpo_save
-    finish
-  endif
-endif
-
-" Automatically open the taglist window on Vim startup
-if !exists('g:Tlist_Auto_Open')
-  let g:Tlist_Auto_Open = 0
-endif
-
-if !exists('g:Tlist_Show_Menu')
-  let g:Tlist_Show_Menu = 0
-endif
-
-" Process files even when the taglist window is not open
-if !exists('g:Tlist_Process_File_Always')
-  let g:Tlist_Process_File_Always = 0
-endif
-
 " Define the taglist autocommand to automatically open the taglist window
 " on Vim startup
 augroup TaglistAutoCmds
   au!
-  if g:Tlist_Auto_Open
+  if exists('g:Tlist_Auto_Open') && g:Tlist_Auto_Open
     autocmd VimEnter * nested call taglist#Tlist_Window_Check_Auto_Open()
   endif
 
   " Refresh the taglist
-  if g:Tlist_Process_File_Always
+  if exists('g:Tlist_Process_File_Always') && g:Tlist_Process_File_Always
     autocmd BufEnter * call taglist#Tlist_Refresh()
   endif
 
-  if g:Tlist_Show_Menu
+  if exists('g:Tlist_Show_Menu') && g:Tlist_Show_Menu
     autocmd GUIEnter * call taglist#Tlist_Menu_Init()
   endif
 augroup END
@@ -169,7 +80,8 @@ command! -nargs=0 -bar TlistMessages call taglist#Tlist_Debug_Show()
 nnoremap <silent> <plug>(TlistJumpTagUp)    :<C-u>call taglist#Tlist_Jump_Prev_Tag()<CR>
 nnoremap <silent> <plug>(TlistJumpTagDown)  :<C-u>call taglist#Tlist_Jump_Next_Tag()<CR>
 
-if g:Tlist_Show_Menu && (has('gui_running') || exists('g:Tlist_Test'))
+if exists('g:Tlist_Show_Menu') && g:Tlist_Show_Menu
+      \ && (has('gui_running') || exists('g:Tlist_Test'))
   call taglist#Tlist_Menu_Init()
 endif
 

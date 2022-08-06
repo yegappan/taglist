@@ -1,7 +1,8 @@
 " File: taglist.vim
 " Author: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
-" Version: 6.0
-" Last Modified: Aug 5, 2022
+" Version: 5.0
+" Last Modified: Aug 6, 2022
+"
 " Copyright: Copyright (C) 2002-2022 Yegappan Lakshmanan
 "            Permission is hereby granted to use and distribute this code,
 "            with or without modifications, provided that this copyright
@@ -20,122 +21,134 @@ if !exists('s:cpo_save')
 endif
 set cpo&vim
 
-" When the taglist window is toggle opened, move the cursor to the
-" taglist window
-if !exists('g:Tlist_GainFocus_On_ToggleOpen')
-  let g:Tlist_GainFocus_On_ToggleOpen = v:false
+" Location of the Universal/exuberant ctags tool
+if !exists('g:Tlist_Ctags_Cmd')
+  " Keep the ctags executable names below sorted by the most commonly used
+  " names at the top.
+  if has('win32')
+    " MS-Windows
+    let ctags_exe_names = ['ctags.exe']
+  else
+    " Unix-like system
+    let ctags_exe_names = [
+          \ 'ctags',
+          \ 'ctags-universal',
+          \ 'exuberant-ctags',
+          \ 'universal-ctags',
+          \ 'exctags',
+          \ 'tags'
+          \ ]
+  endif
+  let ctags_found = v:false
+  for e in ctags_exe_names
+    if executable(e)
+      let g:Tlist_Ctags_Cmd = e
+      let ctags_found = v:true
+      break
+    endif
+  endfor
+
+  if !ctags_found
+    echomsg 'Taglist: Universal ctags (https://ctags.io/) is ' .
+          \ 'not found in PATH. Plugin is not loaded.'
+    finish
+  endif
 endif
 
-" Tag listing sort type - 'name' or 'order'
-if !exists('g:Tlist_Sort_Type')
-  let g:Tlist_Sort_Type = 'order'
-endif
-
-" Tag listing window split (horizontal/vertical) control
-if !exists('g:Tlist_Use_Horiz_Window')
-  let g:Tlist_Use_Horiz_Window = v:false
-endif
-
-" Open the vertically split taglist window on the left or on the right
-" side.  This setting is relevant only if Tlist_Use_Horiz_Window is set to
-" zero (i.e.  only for vertically split windows)
-if !exists('g:Tlist_Use_Right_Window')
-  let g:Tlist_Use_Right_Window = v:false
-endif
-
-" Increase Vim window width to display vertically split taglist window.
-if !exists('g:Tlist_Inc_Winwidth')
-  let g:Tlist_Inc_Winwidth = v:true
-endif
-
-" Vertically split taglist window width setting
-if !exists('g:Tlist_WinWidth')
-  let g:Tlist_WinWidth = 30
-endif
-
-" Horizontally split taglist window height setting
-if !exists('g:Tlist_WinHeight')
-  let g:Tlist_WinHeight = 10
-endif
-
-" Display tag prototypes or tag names in the taglist window
-if !exists('g:Tlist_Display_Prototype')
-  let g:Tlist_Display_Prototype = v:false
-endif
-
-" Display tag scopes in the taglist window
-if !exists('g:Tlist_Display_Tag_Scope')
-  let g:Tlist_Display_Tag_Scope = v:true
-endif
-
-" Use single left mouse click to jump to a tag. By default this is disabled.
-" Only double click using the mouse will be processed.
-if !exists('g:Tlist_Use_SingleClick')
-  let g:Tlist_Use_SingleClick = v:false
-endif
-
-" Control whether additional help is displayed as part of the taglist or
-" not.  Also, controls whether empty lines are used to separate the tag
-" tree.
-if !exists('g:Tlist_Compact_Format')
-  let g:Tlist_Compact_Format = v:false
-endif
-
-" Exit Vim if only the taglist window is currently open. By default, this is
-" set to zero.
-if !exists('g:Tlist_Exit_OnlyWindow')
-  let g:Tlist_Exit_OnlyWindow = v:false
-endif
-
-" Automatically close the folds for the non-active files in the taglist
-" window
-if !exists('g:Tlist_File_Fold_Auto_Close')
-  let g:Tlist_File_Fold_Auto_Close = v:false
-endif
-
-" Close the taglist window when a tag is selected
-if !exists('g:Tlist_Close_On_Select')
-  let g:Tlist_Close_On_Select = v:false
-endif
-
-" Automatically update the taglist window to display tags for newly
-" edited files
-if !exists('g:Tlist_Auto_Update')
-  let g:Tlist_Auto_Update = v:true
-endif
-
-" Automatically highlight the current tag
-if !exists('g:Tlist_Auto_Highlight_Tag')
-  let g:Tlist_Auto_Highlight_Tag = v:true
-endif
-
-" Automatically highlight the current tag on entering a buffer
-if !exists('g:Tlist_Highlight_Tag_On_BufEnter')
-  let g:Tlist_Highlight_Tag_On_BufEnter = v:true
-endif
-
-" Enable fold column to display the folding for the tag tree
-if !exists('g:Tlist_Enable_Fold_Column')
-  let g:Tlist_Enable_Fold_Column = v:true
-endif
-
-" Display the tags for only one file in the taglist window
-if !exists('g:Tlist_Show_One_File')
-  let g:Tlist_Show_One_File = v:false
-endif
-
-" Show the tags in a menu
-if !exists('g:Tlist_Show_Menu')
-  let g:Tlist_Show_Menu = v:false
-endif
-
-if !exists('g:Tlist_Max_Submenu_Items')
-  let g:Tlist_Max_Submenu_Items = 20
-endif
-
-if !exists('g:Tlist_Max_Tag_Length')
-  let g:Tlist_Max_Tag_Length = 10
-endif
+" Initialize options to default values (if not set by the user)
+"
+" The options and their default values are:
+"   Tlist_Auto_Highlight_Tag = v:true
+"     Automatically highlight the current tag.
+"   Tlist_Auto_Open = v:false
+"     Automatically open the taglist window on Vim startup.
+"   Tlist_Auto_Update = v:true
+"     Automatically update the taglist window to display tags for newly edited
+"     files.
+"   Tlist_Close_On_Select = v:false
+"     Close the taglist window when a tag is selected.
+"   Tlist_Compact_Format = v:false
+"     Control whether additional help is displayed as part of the taglist or
+"     not.  Also, controls whether empty lines are used to separate the tag
+"     tree.
+"   Tlist_Display_Prototype = v:false
+"     Display tag prototypes or tag names in the taglist window.
+"   Tlist_Display_Tag_Scope = v:true
+"     Display tag scopes in the taglist window.
+"   Tlist_Enable_Fold_Column = v:true
+"     Enable fold column to display the folding for the tag tree.
+"   Tlist_Exit_OnlyWindow = v:false
+"     Exit Vim if only the taglist window is currently open.
+"   Tlist_File_Fold_Auto_Close = v:false
+"     Automatically close the folds for the non-active files in the taglist
+"     window.
+"   Tlist_GainFocus_On_ToggleOpen = v:false
+"     When the taglist window is toggle opened, move the cursor to the taglist
+"     window.
+"   Tlist_Highlight_Tag_On_BufEnter = v:true
+"     Automatically highlight the current tag on entering a buffer.
+"   Tlist_Inc_Winwidth = v:true
+"     Increase Vim window width to display vertically split taglist window.
+"   Tlist_Max_Submenu_Items = 20
+"     Maximum number of tag names to display in a submenu.
+"   Tlist_Max_Tag_Length = 10
+"     Maximum number of characters in a tag name to display in a menu item.
+"   Tlist_Process_File_Always = v:false
+"     Process files even when the taglist window is not open.
+"   Tlist_Show_Menu = v:false
+"     Display the tags in a menu.
+"   Tlist_Show_One_File = v:false
+"     Display the tags for only one file in the taglist window.
+"   Tlist_Sort_Type = 'order'
+"     Tag listing sort type - 'name' or chronological 'order'.
+"   Tlist_Use_Horiz_Window = v:false
+"     Tag listing window split (horizontal/vertical) control.
+"   Tlist_Use_Right_Window = v:false
+"     Open the vertically split taglist window on the left or on the right
+"     side.  This setting is relevant only if Tlist_Use_Horiz_Window is set to
+"     v:false (i.e. only for vertically split windows).
+"   Tlist_Use_SingleClick = v:false
+"     Use single left mouse click to jump to a tag.  Only double click using
+"     the mouse will be processed.
+"   Tlist_WinWidth = 30
+"     Vertically split taglist window width setting.
+"   Tlist_WinHeight = 10
+"     Horizontally split taglist window height setting.
+func! s:OptionsInitDefault()
+  let defvalues = [
+        \ ['Auto_Highlight_Tag', v:true],
+        \ ['Auto_Open', v:false],
+        \ ['Auto_Update', v:true],
+        \ ['Close_On_Select', v:false],
+        \ ['Compact_Format', v:false],
+        \ ['Display_Prototype', v:false],
+        \ ['Display_Tag_Scope', v:true],
+        \ ['Enable_Fold_Column', v:true],
+        \ ['Exit_OnlyWindow', v:false],
+        \ ['File_Fold_Auto_Close', v:false],
+        \ ['GainFocus_On_ToggleOpen', v:false],
+        \ ['Highlight_Tag_On_BufEnter', v:true],
+        \ ['Inc_Winwidth', v:true],
+        \ ['Max_Submenu_Items', 20],
+        \ ['Max_Tag_Length', 10],
+        \ ['Process_File_Always', v:false],
+        \ ['Show_Menu', v:false],
+        \ ['Show_One_File', v:false],
+        \ ['Sort_Type', 'order'],
+        \ ['Use_Horiz_Window', v:false],
+        \ ['Use_Right_Window', v:false],
+        \ ['Use_SingleClick', v:false],
+        \ ['WinHeight', 10],
+        \ ['WinWidth', 30]
+        \ ]
+  for [name, val] in defvalues
+    let optname = 'g:Tlist_' . name
+    if !exists(optname)
+      exe 'let ' . optname . ' = ' . string(val)
+    endif
+  endfor
+endfunc
+call s:OptionsInitDefault()
 
 " Name of the taglist buffer/window
 let s:TagList_title = '__Tag_List__'
@@ -776,11 +789,6 @@ function! s:Tlist_FileType_Init(ftype) abort
     endif
 
     let [flag, name] = t
-    if flag ==# '' || name ==# ''
-      call s:Tlist_Warning_Msg(msg)
-      return v:false
-    endif
-
     let tagtypes[flag] = {'fullname': name}
     call add(ordered_ttypes, flag)
     let ctags_flags .= flag
@@ -1468,21 +1476,19 @@ endfunction
 " If the 'Tlist_Exit_OnlyWindow' option is set, then exit Vim if only the
 " taglist window is present.
 function! s:Tlist_Window_Exit_Only_Window() abort
-  " Before quitting Vim, delete the taglist buffer so that
-  " the '0 mark is correctly set to the previous buffer.
+  " Before quitting Vim, delete the taglist buffer so that the '0 mark is
+  " correctly set to the previous buffer.
   if winbufnr(2) == -1
     if tabpagenr('$') == 1
-      " Only one tag page is present
+      " Only one tabpage is present.
       "
-      " When deleting the taglist buffer, autocommands cannot be
-      " disabled. If autocommands are disabled, then on exiting Vim,
-      " the window size will not be restored back to the original
-      " size.
+      " When deleting the taglist buffer, autocommands cannot be disabled. If
+      " autocommands are disabled, then on exiting Vim, the window size will
+      " not be restored back to the original size.
       bdelete
       quit
     else
-      " More than one tab page is present. Close only the current
-      " tab page
+      " More than one tab page is present. Close only the current tab page
       close
     endif
   endif
@@ -1997,9 +2003,8 @@ function! s:Tlist_Menu_Update_File(clear_menu) abort
 
   let cmd = ''
 
-  " Determine whether the tag type name needs to be added to the menu
-  " If more than one tag type is present in the taglisting of a file,
-  " then the tag type name needs to be present
+  " Determine whether the tag type name needs to be added to the menu.
+  " If more than one type of tag is in a file, then add the tag type name.
   let add_ttype_name = -1
   for ttype in keys(finfo.tagtypes)
     if !empty(finfo.tagtypes[ttype].tags)
@@ -2066,7 +2071,7 @@ function! s:Tlist_Window_Refresh_File(filename, ftype) abort
   if file_listed && s:files[fidx].visible
     " Check whether the file tags are currently valid
     if s:files[fidx].valid
-      " Goto the first line in the file
+      " Go to the first line in the file
       call cursor(s:files[fidx].start, 1)
 
       " If the line is inside a fold, open the fold
@@ -2433,7 +2438,7 @@ function! taglist#Tlist_Update_File_Tags(filename, ftype) abort
     " Save the current window number
     let save_winnr = winnr()
 
-    " Goto the taglist window
+    " Go to the taglist window
     call s:Tlist_Window_Goto_Window()
 
     " Save the cursor position
@@ -2682,7 +2687,7 @@ function! taglist#Tlist_Window_Highlight_Tag(filename, cur_lnum, cntx, center) a
   let lnum = finfo.start + finfo.tagtypes[ttype].offset +
         \ finfo.tags[tidx].ttype_idx
 
-  " Goto the line containing the tag
+  " Go to the line containing the tag
   call cursor(lnum, 1)
 
   " Open the fold
@@ -3004,7 +3009,7 @@ function! taglist#Tlist_Refresh() abort
     " Save the current window number
     let save_winnr = winnr()
 
-    " Goto the taglist window
+    " Go to the taglist window
     call s:Tlist_Window_Goto_Window()
 
     if !g:Tlist_Auto_Highlight_Tag || !g:Tlist_Highlight_Tag_On_BufEnter
@@ -3145,7 +3150,7 @@ function! s:Tlist_Window_Open_File(win_ctrl, filename, tagpat) abort
     endif
 
     if file_present_in_tab
-      " Goto the tab containing the file
+      " Go to the tab containing the file
       exe 'tabnext ' . i
     else
       " Open a new tab
@@ -3170,7 +3175,7 @@ function! s:Tlist_Window_Open_File(win_ctrl, filename, tagpat) abort
     endif
   endif
 
-  " Goto the window containing the file.  If the window is not there, open a
+  " Go to the window containing the file.  If the window is not there, open a
   " new window
   if winnum == -1
     let winnum = bufwinnr(a:filename)
@@ -3411,8 +3416,8 @@ endfunction
 " Tlist_Jump_Highlight_Tag()
 " Update the highlighted tag, called from Tlist_Jump_Next_Tag() &
 " Tlist_Jump_Prev_Tag(). It is a lighter version of
-" Tlist_Window_Highlight_Tag() because we dont need to recalculate the tag
-" index. Instead it is passed as an argument.
+" Tlist_Window_Highlight_Tag() because we don't need to recalculate the tag
+" index. Instead it is passed as an argument
 " Contributed by Mansour Alharthi
 function! s:Tlist_Jump_Highlight_Tag(finfo, tidx) abort
   " Dont highlight if the user dont want to
@@ -3426,7 +3431,7 @@ function! s:Tlist_Jump_Highlight_Tag(finfo, tidx) abort
     return
   endif
 
-  " If the file is currently not displayed in the taglist window, then retrn
+  " If the file is currently not displayed in the taglist window, then return
   if !a:finfo.visible
     return
   endif
@@ -3490,7 +3495,7 @@ function! s:Tlist_Jump_Highlight_Tag(finfo, tidx) abort
   let lnum = a:finfo.start + a:finfo.tagtypes[ttype].offset +
                 \ a:finfo.tags[a:tidx].ttype_idx
 
-  " Goto the line containing the tag
+  " Go to the line containing the tag
   call cursor(lnum, 1)
 
   " Open the fold
@@ -3849,7 +3854,7 @@ function! taglist#Tlist_Session_Load(sessionfile) abort
   if winnum != -1
     let save_winnr = winnr()
 
-    " Goto the taglist window
+    " Go to the taglist window
     call s:Tlist_Window_Goto_Window()
 
     " Refresh the taglist window

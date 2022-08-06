@@ -110,6 +110,10 @@ func Test_tag_highlight()
   let m = getmatches()
   call assert_equal([], m)
   TlistClose
+  redir => info
+    TlistHighlightTag
+  redir END
+  call assert_equal('Error: Taglist window is not open', split(info, "\n")[0])
   bw!
 endfunc
 
@@ -1009,6 +1013,14 @@ func Test_tlist_window_toggle()
   TlistToggle
   call assert_equal(1, winnr('$'))
   call assert_equal('', bufname(winbufnr(1)))
+endfunc
+
+" Test for :TlistClose
+func Test_tlist_window_close()
+  redir => info
+    TlistClose
+  redir END
+  call assert_equal('Error: Taglist window is not open', split(info, "\n")[0])
 endfunc
 
 " Test for the 'Tlist_GainFocus_On_ToggleOpen' option
