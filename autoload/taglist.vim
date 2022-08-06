@@ -1938,8 +1938,7 @@ function! s:Tlist_Menu_Get_Tag_Type_Cmd(finfo, ftype, ttype, add_ttype_name) abo
     if a:add_ttype_name
       let m_prefix = m_prefix . ttype_fullname . '.'
     endif
-    let j = 1
-    while j <= tcnt
+    for j in range(1, tcnt)
       let tidx = a:finfo.tagtypes[a:ttype].tagidxs[j]
 
       let tname = a:finfo.tags[tidx].name
@@ -1950,8 +1949,7 @@ function! s:Tlist_Menu_Get_Tag_Type_Cmd(finfo, ftype, ttype, add_ttype_name) abo
             \ . ')<CR>|'
 
       let m_prefix_idx += 1
-      let j += 1
-    endwhile
+    endfor
   endif
 
   return mcmd
@@ -2370,6 +2368,9 @@ function! s:Tlist_Post_Close_Cleanup() abort
   endfor
 
   " Remove the taglist autocommands
+  augroup TagListWinAutoCmds
+    au!
+  augroup END
   silent! autocmd! TagListWinAutoCmds
 
   " Clear all the highlights
@@ -3159,16 +3160,14 @@ function! s:Tlist_Window_Open_File(win_ctrl, filename, tagpat) abort
       let file_present_in_tab = 1
       let i = tabpagenr()
     else
-      let i = 1
       let bnum = bufnr(a:filename)
       let file_present_in_tab = 0
-      while i <= tabpagenr('$')
+      for i in range(1, tabpagenr('$'))
         if index(tabpagebuflist(i), bnum) != -1
           let file_present_in_tab = 1
           break
         endif
-        let i += 1
-      endwhile
+      endfor
     endif
 
     if file_present_in_tab
@@ -3208,22 +3207,19 @@ function! s:Tlist_Window_Open_File(win_ctrl, filename, tagpat) abort
     let fwin_num = 0
     let first_usable_win = 0
 
-    let i = 1
-    let bnum = winbufnr(i)
-    while bnum != -1
-      if getwinvar(i, 'tlist_file_window') ==# 'yes'
-        let fwin_num = i
+    for wnum in range(1, winnr('$'))
+      let bnum = winbufnr(wnum)
+      if getwinvar(wnum, 'tlist_file_window') ==# 'yes'
+        let fwin_num = wnum
         break
       endif
       if first_usable_win == 0 &&
             \ getbufvar(bnum, '&buftype') ==# '' &&
-            \ !getwinvar(i, '&previewwindow')
+            \ !getwinvar(wnum, '&previewwindow')
         " First non-taglist, non-plugin and non-preview window
-        let first_usable_win = i
+        let first_usable_win = wnum
       endif
-      let i += 1
-      let bnum = winbufnr(i)
-    endwhile
+    endfor
 
     " If a previously used window is not found, then use the first
     " non-taglist window
@@ -4002,9 +3998,9 @@ endfunction
 function! taglist#Tlist_Window_Check_Auto_Open() abort
   let open_window = 0
 
-  for w in getwininfo()
-    let filename = fnamemodify(bufname(w.bufnr), ':p')
-    let ft = s:Tlist_Get_Buffer_Filetype(w.bufnr)
+  for bufnum in range(1, winbufnr('$'))
+    let filename = fnamemodify(bufname(bufnum), ':p')
+    let ft = s:Tlist_Get_Buffer_Filetype(bufnum)
     if !s:Tlist_Skip_File(filename, ft)
       let open_window = 1
       break

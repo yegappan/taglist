@@ -1152,6 +1152,19 @@ func Test_Tlist_Show_One_File()
   redir END
   call assert_equal(['Tag type=variable, Tag count=1'], split(info, "\n"))
 
+  " Test for deleting a file in the taglist window
+  call cursor(1, 1)
+  normal d
+  let r = getline(1, '$')
+  call assert_equal([''], r)
+
+  " Add the file back again
+  wincmd w
+  TlistUpdate
+  let r = getbufline(winbufnr(1), 1, '$')
+  call assert_equal(['  variable', '    s:State', '  function', '    Func1',
+	\ '    Func2', ''], r[1:])
+
   TlistClose
   %bw!
   let g:Tlist_Show_One_File=0
@@ -1875,29 +1888,19 @@ func Test_tag_search_order()
 endfunc
 
 " Test for the 'Tlist_Exit_OnlyWindow' option
-" FIXME: Fails in Github CI. Disable it for now.
-func XTest_Tlist_Exit_OnlyWindow()
-  let l = [
-	\
-	\ "autocmd VimLeave * call writefile(['Leaving vim'], 'Xleave.txt', 'a')",
-	\ 'let g:Tlist_Exit_OnlyWindow=1',
-	\ 'set rtp+=..',
-	\ 'source ../plugin/taglist.vim',
-	\ 'Tlist',
-	\ 'tabnew',
-	\ 'Tlist',
-	\ "call writefile(['tabs #' .. tabpagenr('$')], 'Xleave.txt', 'a')",
-	\ 'close',
-	\ "call writefile(['tabs #' .. tabpagenr('$')], 'Xleave.txt', 'a')",
-	\ 'close'
-	\ ]
-  call writefile(l, 'Xscript.vim')
-  call delete('Xleave.txt')
-  exe "silent !" .. $VIMCMD .. " -S Xscript.vim"
-  call assert_equal(['tabs #2', 'tabs #1', 'Leaving vim'],
-	\ readfile('Xleave.txt'))
-  call delete('Xscript.vim')
-  call delete('Xleave.txt')
+" When closing a window if the taglist window is the only window in a tabpage,
+" then the tabpage should be closed.
+func Test_Tlist_Exit_OnlyWindow_tabpage()
+  let g:Tlist_Exit_OnlyWindow=1
+  Tlist
+  tabnew
+  Tlist
+  call assert_equal([2, 2], [tabpagenr(), winnr()])
+  close
+  call assert_equal([1, 2], [tabpagenr(), winnr()])
+  TlistClose
+  let g:Tlist_Exit_OnlyWindow=0
+  %bw!
 endfunc
 
 " TODO:

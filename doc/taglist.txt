@@ -197,8 +197,8 @@ creates a normal mode mapping for the <F8> key to toggle the taglist window.
 <
 Add the above mapping to your ~/.vimrc or $HOME/_vimrc file.
 
-To automatically open the taglist window on Vim startup, set the
-'Tlist_Auto_Open' variable to 1.
+To automatically open the taglist window on Vim startup when editing a
+file with a supported file type, set the 'Tlist_Auto_Open' variable to 1.
 
 You can also open the taglist window on startup using the following command
 line:
@@ -697,7 +697,8 @@ the taglist window will not be opened automatically on Vim startup.
 <
 The taglist window is opened only when a supported type of file is opened on
 Vim startup. For example, if you open text files, then the taglist window will
-not be opened.
+not be opened.  If Vim is started without a filename argument, then the
+taglist window is not opened.
 
 						*'Tlist_Auto_Update'*
 Tlist_Auto_Update~
