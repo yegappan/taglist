@@ -120,7 +120,7 @@ endif
 augroup TaglistAutoCmds
   au!
   if g:Tlist_Auto_Open
-    autocmd VimEnter * ++nested call taglist#Tlist_Window_Check_Auto_Open()
+    autocmd VimEnter * nested call taglist#Tlist_Window_Check_Auto_Open()
   endif
 
   " Refresh the taglist

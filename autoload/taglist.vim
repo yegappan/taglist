@@ -1203,7 +1203,7 @@ function! s:Tlist_Window_Init() abort
     endif
     " Exit Vim itself if only the taglist window is present (optional)
     if g:Tlist_Exit_OnlyWindow
-      autocmd BufEnter __Tag_List__ ++nested call s:Tlist_Window_Exit_Only_Window()
+      autocmd BufEnter __Tag_List__ nested call s:Tlist_Window_Exit_Only_Window()
     endif
     if !g:Tlist_Process_File_Always &&
           \ (!has('gui_running') || !g:Tlist_Show_Menu)

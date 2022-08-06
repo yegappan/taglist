@@ -14,13 +14,13 @@ endif
 
 doautocmd VimEnter *
 
-let m = 'Test_Tlist_Auto_Open(' .. test_case .. '): '
+let m = 'Test_Tlist_Auto_Open(' . test_case . '): '
 if test_case == 1
   " Vim invoked without any arguments
   if winnr('$') == 1 && @% == ''
-    call writefile([m .. 'pass'], 'test.log', 'a')
+    call writefile([m . 'pass'], 'test.log', 'a')
   else
-    call writefile([m .. 'FAIL'], 'test.log', 'a')
+    call writefile([m . 'FAIL'], 'test.log', 'a')
   endif
 elseif test_case == 2
   " Vim invoked with a supported file
@@ -36,19 +36,19 @@ elseif test_case == 2
 	  \ ]
     call assert_equal(expected, r[3:])
     if r[3:] ==# expected
-      call writefile([m .. 'pass'], 'test.log', 'a')
+      call writefile([m . 'pass'], 'test.log', 'a')
     else
-      call writefile([m .. 'FAIL'], 'test.log', 'a')
+      call writefile([m . 'FAIL'], 'test.log', 'a')
     endif
   else
-    call writefile([m .. 'FAIL'], 'test.log', 'a')
+    call writefile([m . 'FAIL'], 'test.log', 'a')
   endif
 elseif test_case == 3
   " Vim invoked with an unsupported file
   if winnr('$') == 2
-    call writefile([m .. 'FAIL'], 'test.log', 'a')
+    call writefile([m . 'FAIL'], 'test.log', 'a')
   else
-    call writefile([m .. 'pass'], 'test.log', 'a')
+    call writefile([m . 'pass'], 'test.log', 'a')
   endif
 endif
 
