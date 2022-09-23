@@ -29,26 +29,16 @@ This plugin relies on exuberant or Universal ctags to get the list of tags defin
 
 ## Installation
 
-You can install this plugin by downloading the .zip or the .tar.gz file for the latest taglist release from the following page:
+You can install this plugin from github using the following steps:
 
-https://github.com/yegappan/taglist/releases/latest
-
-You can expand the .zip file in the following directory (on Unix/Linux/MacOS systems):
-
-    $ mkdir -p $HOME/.vim/pack/downloads/start/taglist
-    $ cd $HOME/.vim/pack/downloads/start/taglist
-    $ unzip <downloaded_taglist_file.zip>
-
-You can also install this plugin directly from github using the following steps:
-
-    $ mkdir -p $HOME/.vim/pack/downloads/start/taglist
-    $ cd $HOME/.vim/pack/downloads/start/taglist
+    $ mkdir -p $HOME/.vim/pack/downloads/start
+    $ cd $HOME/.vim/pack/downloads/start
     $ git clone https://github.com/yegappan/taglist
 
 For NeoVim:
 
-    $ mkdir -p $HOME/.config/nvim/pack/downloads/start/taglist
-    $ cd $HOME/.config/nvim/pack/downloads/start/taglist
+    $ mkdir -p $HOME/.config/nvim/pack/downloads/start
+    $ cd $HOME/.config/nvim/pack/downloads/start
     $ git clone https://github.com/yegappan/taglist
 
 or you can use any one of the Vim plugin managers ([vim-plug](https://github.com/junegunn/vim-plug), [dein.vim](https://github.com/Shougo/dein.vim), [pathogen](https://github.com/tpope/vim-pathogen), [minpac](https://github.com/k-takata/minpac), [vam](https://github.com/MarcWeber/vim-addon-manager), [volt](https://github.com/vim-volt/volt), [Vundle](https://github.com/VundleVim/Vundle.vim), etc.) to install and manage this plugin.
