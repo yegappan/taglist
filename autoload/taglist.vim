@@ -1081,7 +1081,7 @@ function! s:Tlist_Window_Init() abort
 
   " Setup balloon evaluation to display tag prototype
   if has('balloon_eval')
-    setlocal balloonexpr=s:Tlist_Ballon_Expr()
+    setlocal balloonexpr=Tlist_Balloon_Expr()
     set ballooneval
   endif
 
@@ -1450,10 +1450,10 @@ function! s:Tlist_Get_Tag_Linenum(tag) abort
   return lnum
 endfunction
 
-" Tlist_Ballon_Expr
+" Tlist_Balloon_Expr
 " When the mouse cursor is over a tag in the taglist window, display the
 " tag prototype (balloon)
-function! s:Tlist_Ballon_Expr() abort
+function! Tlist_Balloon_Expr() abort
   " Get the file index
   let fidx = s:Tlist_Window_Get_File_Index_By_Linenum(v:beval_lnum)
   if fidx == -1
