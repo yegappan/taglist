@@ -43,7 +43,7 @@ For NeoVim:
 
 or you can use any one of the Vim plugin managers ([vim-plug](https://github.com/junegunn/vim-plug), [dein.vim](https://github.com/Shougo/dein.vim), [pathogen](https://github.com/tpope/vim-pathogen), [minpac](https://github.com/k-takata/minpac), [vam](https://github.com/MarcWeber/vim-addon-manager), [volt](https://github.com/vim-volt/volt), [Vundle](https://github.com/VundleVim/Vundle.vim), etc.) to install and manage this plugin.
 
-For more information about using this plugin, after installing the taglist plugin, run the `:helptags ALL` command in Vim and then use the `:help taglist` command.
+For more information about using this plugin, after installing the taglist plugin, run the `:helptags ALL` command in Vim and then use the `:help taglist.txt` command.
 
 You can visit the following page for more information:
 
