@@ -262,6 +262,10 @@ let s:tlist_lang_def['java'] =
 let s:tlist_lang_def['javascript'] =
       \ 'javascript;c:class;m:method;v:global;f:function;p:properties'
 
+" kotlin
+let s:tlist_lang_def['kotlin'] =
+      \ 'kotlin;p:package;i:interface;c:class;o:object;m:method;T:typealias;C:constant;v:variable'
+
 " lisp
 let s:tlist_lang_def['lisp'] = 'lisp;f:function'
 
