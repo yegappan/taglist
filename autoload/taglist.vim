@@ -351,7 +351,7 @@ let s:tlist_lang_def['verilog'] = 'verilog;m:module;c:constant;P:parameter;' .
       \ 'e:event;r:register;t:task;w:write;p:port;v:variable;f:function'
 " systemverilog language
 let s:tlist_lang_def['systemverilog'] = 'systemverilog;C:class;d:define;e:event;n:net;' .
-                                \ 'f:function;t:task;g:covergroup;I:interface;b:block;K:package;' .
+                                \ 'f:function;A:assert;w:member;t:task;g:covergroup;I:interface;b:block;K:package;' .
                                 \ 'm:module;p:port;P:program;T:typedef;' .
                                 \ 'c:constant;M:modport;p:port;R:property;' .
                                 \ 'V:covergroup;S:struct;O:constraint;r:register;E:enum;L:clocking;Q:prototype'
