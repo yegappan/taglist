@@ -349,12 +349,12 @@ let s:tlist_lang_def['vera'] = 'vera;c:class;d:macro;e:enumerator;' .
 " verilog
 let s:tlist_lang_def['verilog'] = 'verilog;m:module;c:constant;P:parameter;' .
       \ 'e:event;r:register;t:task;w:write;p:port;v:variable;f:function'
-" systemverilog language
-let s:tlist_lang_def['systemverilog'] = 'systemverilog;C:class;d:define;e:event;n:net;' .
-                                \ 'f:function;A:assert;w:member;t:task;g:covergroup;I:interface;b:block;K:package;' .
-                                \ 'm:module;P:program;T:typedef;' .
-                                \ 'c:constant;M:modport;R:property;' .
-                                \ 'V:covergroup;S:struct;O:constraint;r:register;E:enum;L:clocking;Q:prototype'
+" systemveriloglanguage 
+let s:tlist_lang_def['systemverilog']= 'systemverilog;A:assert;c:class;' .
+      \ 'E:enum;H:checker;I:interface;K:package;L:clocking;m:module;M:modport;N:nettype;O:constraint;P:program;Q:prototype;' .
+      \ 'R:property;S:struct;T:typedef;V:covergroup;' .
+      \ 'b:block;c:constant;d:define;' .
+      \ 'e:event;f:function;i:instance;l:ifclass;m:module;n:net;p:port;q:sequence;r:register;t:task;w:member'
 " VHDL
 let s:tlist_lang_def['vhdl'] = 'vhdl;c:constant;t:type;T:subtype;r:record;' .
       \ 'e:entity;f:function;p:procedure;P:package'
