@@ -350,7 +350,7 @@ let s:tlist_lang_def['vera'] = 'vera;c:class;d:macro;e:enumerator;' .
 let s:tlist_lang_def['verilog'] = 'verilog;m:module;c:constant;P:parameter;' .
       \ 'e:event;r:register;t:task;w:write;p:port;v:variable;f:function'
 " systemveriloglanguage 
-let s:tlist_lang_def['systemverilog']= 'systemverilog;A:assert;c:class;' .
+let s:tlist_lang_def['systemverilog']= 'systemverilog;A:assert;C:class;' .
       \ 'E:enum;H:checker;I:interface;K:package;L:clocking;m:module;M:modport;N:nettype;O:constraint;P:program;Q:prototype;' .
       \ 'R:property;S:struct;T:typedef;V:covergroup;' .
       \ 'b:block;c:constant;d:define;' .
