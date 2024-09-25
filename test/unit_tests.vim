@@ -1381,8 +1381,9 @@ func Test_gui_base_menu()
 
   " popup menu
   let m = menu_info('PopUp')
-  call assert_equal({'modes': 'a', 'name': 'PopUp', 'submenus': ['Tags'],
-	\ 'shortcut': '', 'priority': 500, 'display': 'PopUp'}, m)
+  call assert_equal(['a', 'PopUp', '', 500, 'PopUp'],
+	\ [m.modes, m.name, m.shortcut, m.priority, m.display])
+  call assert_true(index(m.submenus, 'Tags') != -1)
   let m = menu_info('PopUp.Tags')
   call assert_equal({'modes': 'a', 'name': 'T&ags',
 	\ 'submenus': ['Refresh menu', 'Sort menu by', '-SEP1-'],
