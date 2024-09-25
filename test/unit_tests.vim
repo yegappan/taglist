@@ -942,6 +942,14 @@ endfunc
 
 " Test for the :TlistAddFiles command
 func Test_add_files()
+  if has('nvim')
+    " The TlistAddFiles command uses the following command to detect the
+    " filetype of a file without loading it:
+    "	  doautocmd filetypedect BufRead <filename>
+    " This doesn't work in recent versions of NeoVim starting with 0.11.x
+    return
+  endif
+
   %bw!
   Tlist
   TlistAddFiles Xtest*
@@ -972,6 +980,13 @@ endfunc
 
 " Test for the :TlistAddFilesRecursive command
 func Test_add_files_recursive()
+  if has('nvim')
+    " The TlistAddFiles command uses the following command to detect the
+    " filetype of a file without loading it:
+    "	  doautocmd filetypedect BufRead <filename>
+    " This doesn't work in recent versions of NeoVim starting with 0.11.x
+    return
+  endif
   call mkdir('Xdir/a', 'p')
   call mkdir('Xdir/b', 'p')
   call writefile(['def xFn():', '  pass'], 'Xdir/x.py')
