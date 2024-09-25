@@ -1476,13 +1476,13 @@ function! Tlist_Balloon_Expr() abort
   return s:Tlist_Get_Tag_Prototype(finfo.tags[tidx])
 endfunction
 
-" Tlist_Window_Exit_Only_Window
-" If the 'Tlist_Exit_OnlyWindow' option is set, then exit Vim if only the
-" taglist window is present.
-function! s:Tlist_Window_Exit_Only_Window() abort
+" Tlist_Exit_Only_Window_Callback
+" Timer callback function to exit Vim or to close a tab page if the taglist
+" window is the only window present.
+function! s:Tlist_Exit_Only_Window_Callback(timer_id)
   " Before quitting Vim, delete the taglist buffer so that the '0 mark is
   " correctly set to the previous buffer.
-  if winbufnr(2) == -1
+  if winbufnr(2) == -1 && winbufnr(1) == bufnr(s:TagList_title)
     if tabpagenr('$') == 1
       " Only one tabpage is present.
       "
@@ -1496,6 +1496,15 @@ function! s:Tlist_Window_Exit_Only_Window() abort
       close
     endif
   endif
+endfunc
+
+" Tlist_Window_Exit_Only_Window
+" If the 'Tlist_Exit_OnlyWindow' option is set, then exit Vim if only the
+" taglist window is present.
+function! s:Tlist_Window_Exit_Only_Window() abort
+  " This is called from the BufEnter autocmd.  Closing windows is not allowed
+  " from an autocmd event, so start a timer to make the changes.
+  call timer_start(0, function('s:Tlist_Exit_Only_Window_Callback'))
 endfunction
 
 function! s:Tlist_Menu_Add_Base_Menu() abort
