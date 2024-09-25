@@ -14,6 +14,7 @@ augroup END
 
 Tlist
 close
+sleep 50m
 
 call writefile(['Test_Tlist_Exit_OnlyWindow: FAIL'], 'test.log', 'a')
 augroup TaglistTest

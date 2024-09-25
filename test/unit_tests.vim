@@ -1909,6 +1909,7 @@ func Test_Tlist_Exit_OnlyWindow_tabpage()
   Tlist
   call assert_equal([2, 2], [tabpagenr(), winnr()])
   close
+  sleep 50m
   call assert_equal([1, 2], [tabpagenr(), winnr()])
   TlistClose
   let g:Tlist_Exit_OnlyWindow=0
