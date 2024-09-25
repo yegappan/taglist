@@ -7,7 +7,7 @@ jobs:
     steps:
       - name: Install ctags
         run: |
-          sudo apt update && sudo apt install -y ctags
+          sudo apt update && sudo apt install -y universal-ctags
       - name: Checkout Code
         uses: actions/checkout@v2
       - name: Setup Vim
