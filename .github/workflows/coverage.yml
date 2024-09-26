@@ -3,13 +3,13 @@ on: [push, pull_request]
 jobs:
   linux:
     name: linux
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Install ctags
         run: |
           sudo apt update && sudo apt install -y universal-ctags
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup Vim
         uses: rhysd/action-setup-vim@v1
         id: vim
@@ -24,9 +24,9 @@ jobs:
           cd ./test
           ./run_tests.sh
       - name: Install Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
-          python-version: 3.5
+          python-version: 3.7.14
       - name: Install covimerage
         run: |
           pip install covimerage
@@ -41,7 +41,7 @@ jobs:
           coverage report
           coverage xml
       - name: Upload coverage to codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./test/coverage.xml
