@@ -970,7 +970,11 @@ function! s:Tlist_Remove_File(file_idx, user_request) abort
   let s:tlist_file_count -= 1
 
   if g:Tlist_Show_One_File
-    let s:tlist_cur_file_idx = s:Tlist_Get_File_Index(save_filename)
+    if fidx == s:tlist_cur_file_idx || s:tlist_cur_file_idx == -1
+      let s:tlist_cur_file_idx = -1
+    else
+      let s:tlist_cur_file_idx = s:Tlist_Get_File_Index(save_filename)
+    endif
   endif
 endfunction
 
