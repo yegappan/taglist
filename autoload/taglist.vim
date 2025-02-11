@@ -139,7 +139,8 @@ func! s:OptionsInitDefault()
         \ ['Use_Right_Window', v:false],
         \ ['Use_SingleClick', v:false],
         \ ['WinHeight', 10],
-        \ ['WinWidth', 30]
+        \ ['WinWidth', 30],
+        \ ['Cmd_Encoding', 'default']
         \ ]
   for [name, val] in defvalues
     let optname = 'g:Tlist_' . name
@@ -1777,7 +1778,12 @@ function! s:Tlist_Process_File(filename, ftype) abort
     " and call the batch file.  Do this only on MS-Windows.
     " Contributed by: David Fishburn.
     let taglist_tempfile = fnamemodify(tempname(), ':h') . '\taglist.cmd'
-    call writefile([ctags_cmd], taglist_tempfile, 'b')
+    if has('iconv')
+        let ctags_cmd_codepage = iconv(ctags_cmd, 'UTF-8', g:Tlist_Cmd_Encoding)
+        call writefile([ctags_cmd_codepage], taglist_tempfile, 'b')
+    else
+        call writefile([ctags_cmd], taglist_tempfile, 'b')
+    endif
 
     call s:Tlist_Log_Msg('Cmd inside batch file: ' . ctags_cmd)
     let ctags_cmd = '"' . taglist_tempfile . '"'
